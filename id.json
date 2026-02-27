@@ -172,7 +172,7 @@
       "id": "jio-hotstar",
       "name": "Jio Hotstar",
       "type": "iframe",
-      "iframeSrc": "https://allrounder-live.pages.dev/channel/hotstar",
+      "iframeSrc": "https://allroundersd.pages.dev/player8?id=toxifyxe2",
       "hit": "https://hit-counter-theta.vercel.app/api/hit?key=jio-hotstar",
       "get": "https://hit-counter-theta.vercel.app/api/get?key=jio-hotstar"
     },

@@ -236,7 +236,7 @@
       "id": "cricbuzz",
       "name": "cricbuzz",
       "type": "iframe",
-      "iframeSrc": "https://allrounder-rho.vercel.app/cricbuzz1.html",
+      "iframeSrc": "https://allroundersd.pages.dev/cricbuzz1.html",
       "hit": "https://hit-counter-theta.vercel.app/api/hit?key=SS",
       "get": "https://hit-counter-theta.vercel.app/api/get?key=SS"
     },

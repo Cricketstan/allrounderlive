@@ -1,156 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Star Sports 1 Hindi HD</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" crossorigin="anonymous">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Star Sports 1 Hindi // Sayan 2026</title>
+  <meta name="referrer" content="no-referrer">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" />
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      background: #000;
-      height: 100vh;
-      width: 100vw;
-      overflow: hidden;
-      font-family: system-ui, -apple-system, sans-serif;
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif}
+
+    .shaka-video-container{
+      position:fixed;
+      inset:0;
+      background:#000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
-    .shaka-video-container {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+
+    video{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      background:#000;
     }
-    video {
-      width: 100%;
-      height: 100%;
-      background: #000;
-      object-fit: contain;
+
+    .custom-watermark{
+      position:absolute;
+      z-index:40;
+      pointer-events:none;
+      top:65%;
+      left:6%;
+      transform: translateY(-50%);
+      font-size:11px;
+      font-weight:600;
+      color: rgba(255, 255, 255, 0.12);
     }
-    .shaka-spinner-container,
-    .shaka-spinner,
-    .shaka-spinner-svg {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
+
+    @media(max-width:700px){
+      .custom-watermark{ font-size:9px; top:60%; left:16%; }
     }
   </style>
 </head>
 <body>
-  <div class="shaka-video-container" data-shaka-player>
-    <video autoplay playsinline preload="metadata" poster="https://i.ibb.co/9k9Gx2BJ/0281bb99-9c47-4db0-a1a7-52cefbdf8098.png"></video>
+
+  <div class="shaka-video-container" id="player-container">
+    <video id="video" autoplay playsinline preload="metadata"></video>
+    <div class="custom-watermark"> </div>
   </div>
 
   <script>
+    const CONFIG = {
+      streamUrl: "https://jiotvbpkmob.cdn.jio.com/bpk-tv/Star_Sports_HD1_Hindi_BTS/output/index.mpd",
+      keyId: "400131994b445d8c8817202248760fda",
+      key: "2d56cb6f07a75b9aff165d534ae2bfc4",
+
+      manualCookie: "__hdnea__=st=1772197230~exp=1772283630~acl=/*~hmac=b71f8e8bacad693c7662f3df5f6842b1de9564ab78ae3c7f42e4c723b570a5f7",
+    };
+
     document.addEventListener('DOMContentLoaded', async () => {
+
       shaka.polyfill.installAll();
-      if (!shaka.Player.isBrowserSupported()) {
-        console.error('Browser not supported');
-        return;
-      }
+      if (!shaka.Player.isBrowserSupported()) return;
 
-      const video = document.querySelector('video');
+      const videoEl = document.getElementById('video');
+      const container = document.getElementById('player-container');
+
       const player = new shaka.Player();
-      await player.attach(video);
+      await player.attach(videoEl);
 
-      const container = document.querySelector('.shaka-video-container');
-      const ui = new shaka.ui.Overlay(player, container, video);
+      const ui = new shaka.ui.Overlay(player, container, videoEl);
 
       ui.configure({
-        controlPanelElements: [
-          'play_pause', 'time_and_duration', 'mute', 'volume',
-          'spacer', 'language', 'captions', 'picture_in_picture',
-          'quality', 'fullscreen'
-        ],
-        volumeBarColors: {
-  base: 'rgb(128, 128, 128)',   // gray base
-  level: 'rgb(169, 169, 169)'   // lighter gray level
-},
-seekBarColors: {
-  base: 'rgb(255, 182, 193)',   // light pink base
-  buffered: 'rgb(255, 105, 180)', // hot pink buffered
-  played: 'rgb(255, 20, 147)'   // deep pink played
-}
+        controlPanelElements: ['play_pause','time_and_duration','spacer','language','captions','picture_in_picture','quality','fullscreen'],
+        seekBarColors: { base: 'white', buffered: 'red', played: 'green' }
       });
 
-      let drmConfig = {
-        clearKeys: {
-          "400131994b445d8c8817202248760fda": "2d56cb6f07a75b9aff165d534ae2bfc4"
-        }
-      };
-
-      // Token manually added
-      let cookieHeader = "__hdnea__=st=1772191697~exp=1772278097~acl=/*~hmac=9eeb9b91c5a24edb651b3658d43b0c0f86ce5226f7eee44338ce364dcbf8ed0c";
-      let streamUrl = "https://jiotvbpkmob.cdn.jio.com/bpk-tv/Star_Sports_HD1_Hindi_BTS/output/index.mpd";
-
       player.configure({
-        drm: drmConfig,
-        streaming: {
-          lowLatencyMode: true,
-          bufferingGoal: 15,
-          rebufferingGoal: 2,
-          bufferBehind: 15,
-          retryParameters: {
-            timeout: 10000,
-            maxAttempts: 5,
-            baseDelay: 300,
-            backoffFactor: 1.2
-          },
-          segmentRequestTimeout: 8000,
-          segmentPrefetchLimit: 2,
-          useNativeHlsOnSafari: true
-        },
-        manifest: {
-          retryParameters: { timeout: 8000, maxAttempts: 3 }
-        }
+        drm: { clearKeys: { [CONFIG.keyId]: CONFIG.key } },
+        manifest: { defaultPresentationDelay: 5 },
+        streaming: { safeSeekOffset: 5, bufferingGoal: 10, rebufferingGoal: 2, lowLatencyMode: true }
       });
 
       player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        request.headers['Referer'] = 'https://www.jiotv.com/';
-        request.headers['User-Agent'] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
-        if (cookieHeader) request.headers['Cookie'] = cookieHeader;
 
-        if (
-          (type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-           type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
-          request.uris[0] && cookieHeader && !request.uris[0].includes('__hdnea=')
-        ) {
-          const sep = request.uris[0].includes('?') ? '&' : '?';
-          request.uris[0] += sep + cookieHeader;
+        request.headers['Referer'] = 'https://www.jiotv.com/';
+        request.headers['User-Agent'] = 'plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6';
+
+        if (CONFIG.manualCookie && CONFIG.manualCookie !== "PUT_YOUR_COOKIE_HERE") {
+
+          request.headers['Cookie'] = CONFIG.manualCookie;
+
+          if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+               type === shaka.net.NetworkingEngine.RequestType.SEGMENT) &&
+               !request.uris[0].includes('__hdnea__')) {
+
+            const sep = request.uris[0].includes('?') ? '&' : '?';
+            request.uris[0] += sep + CONFIG.manualCookie;
+          }
         }
       });
 
-      const attemptAutoplay = async () => {
-        try {
-          video.muted = false;
-          await video.play();
-          return true;
-        } catch {
-          try {
-            video.muted = true;
-            await video.play();
-            return true;
-          } catch {
-            return false;
-          }
-        }
-      };
-
       try {
-        await player.load(streamUrl);
-        await attemptAutoplay();
+        await player.load(CONFIG.streamUrl);
+        videoEl.play();
       } catch (e) {
-        console.error("Initial load failed:", e);
+        console.error("Stream Load Error:", e);
       }
-
-      // Refresh token every 5 minutes — if still needed, update manually here
-      // setInterval(() => { /* no fetch */ }, 5 * 60 * 1000);
-
-      player.addEventListener('error', e => console.error("Shaka Error:", e.detail));
     });
   </script>
-  <script>(function(s){s.dataset.zone='10603308',s.src='https://bvtpk.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 
-  
 </body>
 </html>

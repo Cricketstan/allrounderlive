@@ -1,75 +1,372 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JioTV Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket News Point - Live TV</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #0ea5e9;
+            --header-bg: rgba(15, 23, 42, 0.85);
+            --danger: #ef4444;
+        }
 
-<style>
-body{
-margin:0;
-background:#000;
-font-family:system-ui;
-color:#fff;
-}
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-gap:15px;
-padding:15px;
-}
-.card{
-background:#111;
-border-radius:10px;
-overflow:hidden;
-cursor:pointer;
-border:1px solid #222;
-}
-.card img{
-width:100%;
-height:120px;
-object-fit:contain;
-background:#000;
-}
-.name{
-padding:10px;
-font-size:14px;
-text-align:center;
-}
-</style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        
+        body {
+            background-color: var(--primary-bg);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.08), transparent 25%), 
+                radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.08), transparent 25%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background: var(--header-bg);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        /* Controls Area */
+        .controls-wrapper {
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.5) 0%, transparent 100%);
+            padding: 30px 5% 10px;
+        }
+
+        .controls-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .search-box-container {
+            position: relative;
+            flex-grow: 1;
+            max-width: 500px;
+            min-width: 280px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            width: 18px;
+            height: 18px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 45px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .category-select {
+            appearance: none;
+            background: var(--card-bg);
+            color: var(--text-main);
+            padding: 14px 40px 14px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* Time Display Info */
+        .data-info {
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .pulse {
+            width: 8px; height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            animation: pulse-animation 2s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .feedback-btn {
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            padding: 30px 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 15px;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .card-img-wrapper { height: 90px; width: 100%; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 5px; }
+        .card-img { max-height: 100%; max-width: 100%; object-fit: contain; }
+        .card-title { font-size: 0.95rem; font-weight: 500; text-align: center; color: #e2e8f0; }
+
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 50px auto;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .footer { background: #020617; padding: 40px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto; }
+        .disclaimer-box { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; padding: 15px; max-width: 900px; margin: 0 auto 20px; text-align: left; font-size: 0.8rem; color: #cbd5e1; }
+
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+            .feedback-btn span { display: none; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="grid" id="grid"></div>
+<nav class="navbar">
+    <div class="logo-text">Cricket TV</div>
+    <a href="/Feedback" class="feedback-btn" target="_blank"><span>Feedback</span></a>
+</nav>
+
+<div class="controls-wrapper">
+    <div class="controls-container">
+        
+        <div class="category-wrapper" style="position:relative;">
+            <select id="categorySelect" class="category-select" onchange="handleCategoryChange()">
+                <option value="All">All Categories</option>
+            </select>
+        </div>
+
+        <div class="search-box-container">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search channels...">
+        </div>
+
+        <div class="data-info">
+            <div>
+                <div class="pulse"></div>
+                <span id="channelCount">Loading channels...</span>
+            </div>
+            <div style="font-size: 0.75rem; line-height: 1.5;">
+                Last Sync: <span id="updateTime" style="color: #e2e8f0;">...</span><br>
+                Expires: <span id="expireTime" style="color: #ef4444; font-weight: 500;">...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid" id="grid">
+    <div class="spinner"></div>
+</div>
+
+<footer class="footer">
+    <div class="disclaimer-box">
+        <strong>LEGAL DISCLAIMER:</strong> Cricket TV (Dillzy) is a search engine for publicly available content. We do not host or broadcast any media on our servers.
+    </div>
+    <div style="color: #475569; font-size: 0.8rem;">
+        &copy; <script>document.write(new Date().getFullYear())</script> Dillzy • All Rights Reserved.
+    </div>
+</footer>
 
 <script>
-const API = "https://allrounderid2.pages.dev/api/jiotv2.json";
+    const APP_CONFIG = {
+        DATA_URL: "https://allrounderid2.pages.dev/api/jiotv2.json", 
+        PLAYER_URL: "https://cnpoint.pages.dev/JioTV/PLAY",
+        CACHE_KEY: "cnp_channel_data_v3",
+        TIME_KEY: "satan_last_sync_time",
+        EXPIRE_KEY: "sayan_expire_time"
+    };
 
-fetch(API)
-.then(res => res.json())
-.then(data => {
+    let allChannels = [];
 
-const grid = document.getElementById("grid");
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeSystem();
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            filterData(e.target.value, document.getElementById('categorySelect').value);
+        });
+    });
 
-data.forEach(channel => {
+    async function initializeSystem() {
+    
+        const cachedData = localStorage.getItem(APP_CONFIG.CACHE_KEY);
+        const cachedTime = localStorage.getItem(APP_CONFIG.TIME_KEY);
+        const cachedExpire = localStorage.getItem(APP_CONFIG.EXPIRE_KEY);
+        
+        if (cachedData) {
+            try {
+                allChannels = JSON.parse(cachedData);
+                renderApp(allChannels);
+                if (cachedTime) document.getElementById('updateTime').innerText = cachedTime;
+                if (cachedExpire) document.getElementById('expireTime').innerText = cachedExpire;
+            } catch(e) { 
+                localStorage.removeItem(APP_CONFIG.CACHE_KEY); 
+            }
+        }
+        
+   
+        fetchData();
+    }
 
-const card = document.createElement("div");
-card.className = "card";
+    async function fetchData() {
+        try {
+            const response = await fetch(APP_CONFIG.DATA_URL);
+            const newData = await response.json();
+            
+            if (newData && newData.length > 0) {
+              
+                const displayTime = newData[0].last_update || "N/A";
+                const expireTime = newData[0].expire_time || "N/A";
+                
+                // ক্যাশে সেভ করা
+                localStorage.setItem(APP_CONFIG.CACHE_KEY, JSON.stringify(newData));
+                localStorage.setItem(APP_CONFIG.TIME_KEY, displayTime);
+                localStorage.setItem(APP_CONFIG.EXPIRE_KEY, expireTime);
 
-card.onclick = () => {
-window.location.href = "player.html?id=" + channel.channel_id;
-};
+                allChannels = newData;
+                renderApp(allChannels);
+                
+                document.getElementById('updateTime').innerText = displayTime;
+                document.getElementById('expireTime').innerText = expireTime;
+            }
+        } catch (error) {
+            console.error("Sync failed:", error);
+            if (allChannels.length === 0) {
+                document.getElementById('grid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:red;">Failed to load data. Please check connection.</div>`;
+            }
+        }
+    }
 
-card.innerHTML = `
-<img src="${channel.channel_logo}">
-<div class="name">${channel.channel_name}</div>
-`;
+    function renderApp(data) {
+        setupCategories(data);
+        filterData(document.getElementById('searchInput').value, document.getElementById('categorySelect').value);
+    }
 
-grid.appendChild(card);
+    function setupCategories(data) {
+        const genres = [...new Set(data.map(i => i.channel_genre).filter(g => g))].sort();
+        const select = document.getElementById('categorySelect');
+        const currentVal = select.value;
+        
+        select.innerHTML = '<option value="All">All Categories</option>';
+        genres.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g; opt.innerText = g;
+            select.appendChild(opt);
+        });
+        
+        if (genres.includes(currentVal)) select.value = currentVal;
+    }
 
-});
+    function handleCategoryChange() {
+        filterData(document.getElementById('searchInput').value, document.getElementById('categorySelect').value);
+    }
 
-});
+    function filterData(searchTerm, category) {
+        const grid = document.getElementById('grid');
+        const term = searchTerm.toLowerCase().trim();
+        
+        const filtered = allChannels.filter(ch => {
+            const nameMatch = ch.channel_name && ch.channel_name.toLowerCase().includes(term);
+            const catMatch = category === 'All' || ch.channel_genre === category;
+            return nameMatch && catMatch;
+        });
+
+        document.getElementById('channelCount').innerText = `${filtered.length} Channels Live`;
+        grid.innerHTML = '';
+        
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;">No channels found.</div>';
+            return;
+        }
+
+        filtered.forEach(ch => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            const logo = ch.channel_logo || 'https://via.placeholder.com/150?text=TV';
+            
+            card.innerHTML = `
+                <div class="card-img-wrapper">
+                    <img src="${logo}" class="card-img" alt="${ch.channel_name}" onerror="this.src='https://placehold.co/100x100/1e293b/FFF?text=No+Img'">
+                </div>
+                <div class="card-title">${ch.channel_name}</div>`;
+                
+            card.onclick = () => { 
+                window.location.href = `${APP_CONFIG.PLAYER_URL}?id=${ch.channel_id}`; 
+            };
+            grid.appendChild(card);
+        });
+    }
 </script>
 
 </body>

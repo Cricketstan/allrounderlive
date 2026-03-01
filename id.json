@@ -148,7 +148,7 @@
       "id": "eng",
       "name": "Star Sports Select",
       "type": "iframe",
-      "iframeSrc": "https://allrounderid2.pages.dev/jjiotv/player?id=1109",
+      "iframeSrc": "https://allrounderid2.pages.dev/jjiotv/player?id=1106",
       "hit": "https://hit-counter-theta.vercel.app/api/hit?key=eng",
       "get": "https://hit-counter-theta.vercel.app/api/get?key=eng"
     },

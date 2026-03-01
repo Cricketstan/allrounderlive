@@ -4,7 +4,7 @@
       "id": "hindi",
       "name": "Star Sports Hindi",
       "type": "iframe",
-      "iframeSrc": "https://allrounder-live.pages.dev/channel/star-sports-1-hindi",
+      "iframeSrc": "https://allrounderid2.pages.dev/jjiotv/player?id=1108",
       "hit": "https://hit-counter-theta.vercel.app/api/hit?key=hindi",
       "get": "https://hit-counter-theta.vercel.app/api/get?key=hindi"
     },
@@ -148,7 +148,7 @@
       "id": "eng",
       "name": "Star Sports Select",
       "type": "iframe",
-      "iframeSrc": "https://channel-14.pages.dev/",
+      "iframeSrc": "https://allrounderid2.pages.dev/jjiotv/player?id=1109",
       "hit": "https://hit-counter-theta.vercel.app/api/hit?key=eng",
       "get": "https://hit-counter-theta.vercel.app/api/get?key=eng"
     },

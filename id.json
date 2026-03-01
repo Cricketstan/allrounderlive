@@ -244,7 +244,7 @@
       "id": "tamil",
       "name": "tamil",
       "type": "iframe",
-      "iframeSrc": "https://allroundersd.pages.dev/channel/Tamil",
+      "iframeSrc": "https://allrounder-live.pages.dev/channel/star-sports-1-hindi",
       "hit": "https://hit-counter-theta.vercel.app/api/hit?key=SS",
       "get": "https://hit-counter-theta.vercel.app/api/get?key=SS"
     }

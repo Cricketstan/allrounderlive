@@ -244,7 +244,7 @@
       "id": "tamil",
       "name": "tamil",
       "type": "iframe",
-      "iframeSrc": "https://allrounder-live.pages.dev/star/tamjl-1",
+      "iframeSrc": "https://allrounder-live.pages.dev/star/tamil-1",
       "hit": "https://hit-counter-theta.vercel.app/api/hit?key=SS",
       "get": "https://hit-counter-theta.vercel.app/api/get?key=SS"
     }

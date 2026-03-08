@@ -20,7 +20,7 @@
       "id": "prime-hin",
       "name": "Prime Hindi",
       "type": "iframe",
-      "iframeSrc": "https://allrounder-theta.vercel.app/channel/prame-hin.html",
+      "iframeSrc": "https://allrounder-live.pages.dev/channel/prame-hin.html",
       "hit": "https://hit-counter-theta.vercel.app/api/hit?key=prime-hin",
       "get": "https://hit-counter-theta.vercel.app/api/get?key=prime-hin"
     },
@@ -60,7 +60,7 @@
       "id": "willow",
       "name": "Willow",
       "type": "iframe",
-      "iframeSrc": "https://allrounder-theta.vercel.app/channel/willow.html",
+      "iframeSrc": "https://allrounder-live.pages.dev/channel/willow.html",
       "hit": "https://hit-counter-theta.vercel.app/api/hit?key=willow",
       "get": "https://hit-counter-theta.vercel.app/api/get?key=willow"
     },
@@ -92,7 +92,7 @@
       "id": "prime-eng",
       "name": "Prime English",
       "type": "iframe",
-      "iframeSrc": "https://allrounder-theta.vercel.app/channel/prame.html",
+      "iframeSrc": "https://allrounder-live.pages.dev/channel/prame.html",
       "hit": "https://hit-counter-theta.vercel.app/api/hit?key=prime-eng",
       "get": "https://hit-counter-theta.vercel.app/api/get?key=prime-eng"
     },

@@ -249,6 +249,14 @@
       "get": "https://hit-counter-theta.vercel.app/api/get?key=SS"
     },
     {
+      "id": "fancode",
+      "name": "fancode",
+      "type": "iframe",
+      "iframeSrc": "https://allrounder-live.pages.dev/fancode-player?url=",
+      "hit": "https://hit-counter-theta.vercel.app/api/hit?key=SS",
+      "get": "https://hit-counter-theta.vercel.app/api/get?key=SS"
+    },
+    {
       "id": "tamil",
       "name": "tamil",
       "type": "iframe",

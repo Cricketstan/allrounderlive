@@ -1,0 +1,2203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+(function(){
+  var ref = document.referrer;
+  var allowed = 'iconictvlive.github.io';
+  // If no referrer or referrer is not from the allowed host, redirect to main site
+  if(!ref || ref.indexOf(allowed) === -1){
+    window.location.replace('https://iconictvlive.github.io');
+  }
+})();
+</script>
+<script>
+/* ── Geo-check: only block confirmed non-India users ── */
+/* Safety: fails OPEN — if API errors, Indian users are never blocked */
+(function(){
+  var checked = false;
+
+  function tryGeo(url, parser){
+    return fetch(url, {cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(parser)
+      .catch(function(){ return null; }); /* null = unknown, never block */
+  }
+
+  /* Use two APIs — only show overlay if at least one confirms NOT India */
+  /* AND neither returned null (error/unknown) */
+  Promise.all([
+    tryGeo('https://ipapi.co/json/', function(d){ return d && d.country_code ? d.country_code : null; }),
+    tryGeo('https://api.country.is/', function(d){ return d && d.country ? d.country : null; })
+  ]).then(function(results){
+    if(checked) return;
+    var r1 = results[0], r2 = results[1];
+    /* Only block if we got a real answer AND it's not India */
+    /* If BOTH return null (both APIs down) → do nothing, let Indian users through */
+    var nonIndia1 = r1 !== null && r1 !== 'IN';
+    var nonIndia2 = r2 !== null && r2 !== 'IN';
+    /* Block only if at least one confirms non-India AND neither says India */
+    var confirmedIndia = r1 === 'IN' || r2 === 'IN';
+    if(!confirmedIndia && (nonIndia1 || nonIndia2)){
+      checked = true;
+      showVpnOverlay();
+    }
+  }).catch(function(){ /* never block on any unexpected error */ });
+
+  function showVpnOverlay(){
+    var ov = document.createElement('div');
+    ov.style.cssText = [
+      'position:fixed','inset:0','z-index:99999',
+      'background:rgba(8,8,14,.97)',
+      'display:flex','flex-direction:column',
+      'align-items:center','justify-content:center',
+      'text-align:center','padding:24px',
+      'font-family:DM Sans,sans-serif'
+    ].join(';');
+    ov.innerHTML = [
+      '<div style="font-size:52px;margin-bottom:16px;">\uD83C\uDF10</div>',
+      '<div style="font-family:Bebas Neue,sans-serif;font-size:clamp(28px,7vw,48px);',
+        'letter-spacing:3px;color:#fff;margin-bottom:10px;">OUTSIDE INDIA DETECTED</div>',
+      '<div style="font-size:clamp(13px,3.5vw,16px);color:rgba(255,255,255,.55);',
+        'max-width:380px;line-height:1.7;margin-bottom:28px;">',
+        'This stream is only available in <strong style="color:#fff;">India</strong>.<br>',
+        'Connect to an <strong style="color:#e63946;">Indian VPN</strong> and come back to watch free.',
+      '</div>',
+      '<a href="https://iconictvlive.github.io" style="',
+        'display:inline-flex;align-items:center;gap:10px;',
+        'background:#e63946;color:#fff;font-weight:700;font-size:14px;',
+        'padding:13px 30px;border-radius:12px;text-decoration:none;letter-spacing:.5px;">',
+        '\u2190 Return to Home',
+      '</a>',
+      '<div style="margin-top:18px;font-size:11px;color:rgba(255,255,255,.25);letter-spacing:1px;">',
+        'USE AN INDIAN VPN \u00B7 THEN REFRESH',
+      '</div>'
+    ].join('');
+    document.body.appendChild(ov);
+  }
+})();
+</script>
+<script>
+/* ── DevTools Block: auto-redirect on detection ── */
+(function(){
+  var kicked = false;
+
+  function kick(){
+    if(kicked) return;
+    kicked = true;
+    window.location.replace('https://iconictvlive.github.io');
+  }
+
+  /* ── Method 1: window size heuristic (docked devtools panel) ── */
+  var THRESH = 160;
+  function checkSize(){
+    var widthDiff  = window.outerWidth  - window.innerWidth;
+    var heightDiff = window.outerHeight - window.innerHeight;
+    if(widthDiff > THRESH || heightDiff > THRESH) kick();
+  }
+  setInterval(checkSize, 500);
+  window.addEventListener('resize', checkSize);
+
+  /* ── Method 2: debugger timing trap ── */
+  setInterval(function(){
+    var start = performance.now();
+    (function(){ debugger; })();
+    if(performance.now() - start > 100) kick();
+  }, 1000);
+
+  /* ── Method 3: console getter trick ── */
+  var devObj = Object.defineProperty({}, 'id', {
+    get: function(){ kick(); return 0; }
+  });
+  setInterval(function(){ console.log('%c', devObj); }, 1000);
+
+  /* ── Disable right-click ── */
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+
+  /* ── Block DevTools keyboard shortcuts ── */
+  document.addEventListener('keydown', function(e){
+    if(
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C' || e.key === 'U')) ||
+      (e.ctrlKey && e.key === 'U') ||
+      (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))
+    ){
+      e.preventDefault();
+      e.stopPropagation();
+      kick();
+      return false;
+    }
+  });
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>IPL Free Live · IPL 2026 | icn.rishi</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
+<style>
+:root{
+  --bg:#08080e;--bg2:#100f16;--bg3:#16141f;--bg4:#1c1928;
+  --rcb:#e63946;--rcb2:#ff5c67;
+  --srh:#f97316;--srh2:#fbbf24;
+  --text:#f0f0f5;--muted:#6b6b8a;--muted2:#9090aa;
+  --border:rgba(255,255,255,0.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse at 5% 40%,rgba(230,57,70,.09) 0%,transparent 45%),
+             radial-gradient(ellipse at 95% 40%,rgba(249,115,22,.09) 0%,transparent 45%);
+  pointer-events:none;z-index:0;}
+
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+
+/* TOP BAR */
+.top-bar{position:relative;z-index:200;
+  background:linear-gradient(90deg,var(--rcb) 0%,#2a0a0e 48%,#1a0a00 52%,var(--srh) 100%);
+  padding:7px 20px;display:flex;align-items:center;justify-content:center;gap:8px;
+  font-size:12px;font-weight:700;letter-spacing:.6px;}
+.top-bar a{color:#fff;text-decoration:none;display:flex;align-items:center;gap:6px;}
+.live-pulse{width:7px;height:7px;background:#fff;border-radius:50%;animation:pulse 1.4s ease-in-out infinite;flex-shrink:0;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:60px;background:rgba(8,8,14,.97);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;display:flex;align-items:baseline;gap:6px;}
+.nav-title .grad{background:linear-gradient(135deg,#e63946,#ffffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.nav-title .white{color:#fff;}
+.nav-formerly{font-size:9px;color:var(--muted);letter-spacing:1px;font-family:'DM Sans',sans-serif;}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-btn{display:flex;align-items:center;gap:6px;color:var(--muted2);font-size:12px;font-weight:600;
+  text-decoration:none;border:1px solid var(--border);padding:7px 14px;border-radius:20px;transition:all .2s;}
+.nav-btn:hover{color:var(--text);border-color:rgba(255,255,255,.15);}
+.nav-btn svg{width:14px;height:14px;flex-shrink:0;}
+.nav-btn-back{color:var(--rcb);border-color:rgba(230,57,70,.25);}
+.nav-btn-back:hover{border-color:rgba(230,57,70,.5);color:var(--rcb2);}
+
+/* MATCHUP HERO — slim compact bar */
+.match-hero{position:relative;z-index:1;overflow:hidden;
+  background:linear-gradient(180deg,#0e0a0f 0%,var(--bg) 100%);
+  border-bottom:1px solid rgba(255,255,255,.05);}
+.match-hero-inner{max-width:1100px;margin:0 auto;padding:10px 20px;
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;}
+
+.team-panel{display:flex;flex-direction:row;align-items:center;gap:8px;}
+.team-panel.left{justify-content:flex-start;}
+.team-panel.right{justify-content:flex-end;flex-direction:row-reverse;}
+.team-logo-wrap{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.team-logo-wrap img{width:100%;height:100%;object-fit:contain;}
+.team-name-big{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;line-height:1;}
+.team-full{font-size:10px;color:var(--muted2);letter-spacing:.3px;}
+.team-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;
+  letter-spacing:.8px;padding:2px 7px;border-radius:20px;}
+.badge-rcb{background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.3);color:var(--rcb2);}
+.badge-srh{background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.3);color:var(--srh);}
+.team-info{display:flex;flex-direction:column;gap:2px;}
+.team-panel.right .team-info{align-items:flex-end;}
+
+.vs-center{text-align:center;flex-shrink:0;}
+.live-chip{display:inline-flex;align-items:center;gap:4px;background:#e63946;color:#fff;
+  font-size:8px;font-weight:700;letter-spacing:1.5px;padding:2px 6px;border-radius:20px;margin-bottom:2px;}
+.vs-txt{font-family:'Bebas Neue',sans-serif;font-size:16px;
+  background:linear-gradient(135deg,var(--rcb),var(--srh));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  letter-spacing:2px;line-height:1;}
+.match-meta{font-size:8px;color:var(--muted);text-align:center;margin-top:2px;line-height:1.4;}
+
+.hero-divider{height:2px;
+  background:linear-gradient(90deg,var(--rcb) 0%,rgba(230,57,70,0) 45%,rgba(249,115,22,0) 55%,var(--srh) 100%);}
+
+/* PLAYER */
+.player-section{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:20px 20px 0;}
+.player-wrap{background:#000;border-radius:18px 18px 0 0;overflow:hidden;
+  border:1px solid rgba(255,255,255,.06);
+  box-shadow:0 20px 80px rgba(0,0,0,.7),-4px 0 30px rgba(230,57,70,.07),4px 0 30px rgba(249,115,22,.07);
+  animation:fadeUp .35s .1s ease both;}
+.player-aspect{position:relative;width:100%;padding-bottom:56.25%;}
+
+.p-loading{position:absolute;inset:0;
+  background:linear-gradient(135deg,#0c050a,#080508,#050408);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  z-index:10;transition:opacity .35s;}
+.p-loading.hidden{opacity:0;pointer-events:none;}
+.p-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;
+  background:linear-gradient(90deg,var(--rcb),var(--srh),var(--rcb));
+  background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:shimmer 2.5s linear infinite;}
+.p-ring{width:48px;height:48px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.07);
+  border-top-color:var(--rcb);border-right-color:var(--srh);
+  animation:spin 1s linear infinite;}
+.p-txt{font-size:12px;color:var(--muted2);font-weight:600;letter-spacing:.5px;}
+
+.p-error{position:absolute;inset:0;background:linear-gradient(135deg,#0c050a,#080508);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;z-index:10;padding:28px;text-align:center;}
+.p-error.show{display:flex;}
+.p-err-icon{font-size:42px;}
+.p-err-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--text);}
+.p-err-sub{font-size:13px;color:var(--muted2);line-height:1.6;max-width:300px;}
+.p-err-btn{display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--rcb),var(--srh));
+  color:#fff;font-weight:700;font-size:13px;padding:11px 24px;border-radius:10px;
+  border:none;cursor:pointer;margin-top:6px;transition:transform .15s;letter-spacing:.5px;}
+.p-err-btn:hover{transform:translateY(-1px);}
+.p-err-btn:active{transform:scale(.97);}
+
+/* TEAM STATS */
+.stats-strip{max-width:1100px;margin:14px auto 0;padding:0 20px;animation:fadeUp .35s .15s ease both;}
+.stats-inner{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.team-stat-card{border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:14px;}
+.tsc-rcb{background:linear-gradient(135deg,rgba(230,57,70,.12),rgba(230,57,70,.04));border:1px solid rgba(230,57,70,.2);}
+.tsc-srh{background:linear-gradient(135deg,rgba(249,115,22,.12),rgba(249,115,22,.04));border:1px solid rgba(249,115,22,.2);}
+.tsc-icon{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.tsc-icon img{width:100%;height:100%;object-fit:contain;}
+.tsc-body{flex:1;min-width:0;}
+.tsc-team{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;}
+.tsc-rcb .tsc-team{color:var(--rcb2);}
+.tsc-srh .tsc-team{color:var(--srh);}
+.tsc-stats{display:flex;gap:14px;margin-top:5px;flex-wrap:wrap;}
+.tsc-stat{font-size:10px;color:var(--muted2);}
+.tsc-stat strong{font-size:13px;font-weight:700;color:var(--text);display:block;}
+
+/* HOW TO WATCH */
+.how-section{max-width:1100px;margin:20px auto 0;padding:0 20px;animation:fadeUp .35s .2s ease both;}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--text);margin-bottom:12px;}
+.sec-title .rcb{color:var(--rcb);}
+.sec-title .srh{color:var(--srh);}
+.how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.how-step{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:flex-start;}
+.step-n{font-family:'Bebas Neue',sans-serif;font-size:30px;line-height:1;flex-shrink:0;}
+.step-n.rcb{color:rgba(230,57,70,.3);}
+.step-n.srh{color:rgba(249,115,22,.3);}
+.step-body strong{font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:3px;}
+.step-body p{font-size:12px;color:var(--muted2);line-height:1.55;}
+
+/* CHANNELS */
+.quick-section{max-width:1100px;margin:20px auto 40px;padding:0 20px;animation:fadeUp .35s .25s ease both;}
+.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.qc{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;
+  text-decoration:none;display:flex;align-items:center;gap:10px;transition:all .2s;}
+.qc:hover{background:var(--bg3);transform:translateY(-2px);}
+.qc:active{transform:scale(.97);}
+.qc-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.qc-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.2;}
+.qc-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+
+footer{text-align:center;padding:20px;font-size:11px;color:var(--muted);
+  border-top:1px solid var(--border);letter-spacing:.5px;line-height:1.8;position:relative;z-index:1;}
+
+a,button{-webkit-tap-highlight-color:transparent;}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .stats-inner{grid-template-columns:1fr 1fr;}
+  .how-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:680px){
+  .match-hero-inner{gap:8px;padding:8px 14px;}
+  .team-logo-wrap{width:28px;height:28px;}
+  .team-full{display:none;}
+}
+@media(max-width:600px){
+  .top-bar{font-size:10.5px;padding:6px 10px;}
+  nav{padding:0 12px;height:52px;}
+  .nav-title{font-size:18px;letter-spacing:2px;}
+  .nav-formerly{display:none;}
+  .nav-btn span{display:none;}
+  .nav-btn{padding:6px 10px;}
+  .player-section{padding:12px 12px 0;}
+  .player-wrap{border-radius:12px;}
+  .stats-strip{padding:0 12px;}
+  .how-grid{grid-template-columns:1fr 1fr;}
+  .how-section,.quick-section{padding:0 12px;margin-top:14px;}
+  .quick-section{margin-bottom:28px;}
+}
+@media(max-width:480px){
+  nav{height:48px;}
+  .match-hero-inner{gap:6px;padding:7px 10px;}
+  .team-logo-wrap{width:24px;height:24px;}
+  .team-name-big{font-size:18px;}
+  .vs-txt{font-size:18px;}
+  .team-badge{display:none;}
+  .stats-inner{grid-template-columns:1fr;}
+  .how-grid{grid-template-columns:1fr;}
+  .quick-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:379px){
+  nav{height:44px;}
+  .team-name-big{font-size:15px;}
+}
+</style>
+</head>
+<body>
+
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-brand">
+    <div>
+      <div class="nav-title"><span class="grad">CRICKET</span><span class="white">TV</span></div>
+      <div class="nav-formerly">formerly ICONIC TV</div>
+    </div>
+  </a>
+  <div class="nav-right">
+    <a href="index.html" class="nav-btn nav-btn-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Back</span>
+    </a>
+    <a href="https://instagram.com/icn.rishi" target="_blank" class="nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+      <span>@icn.rishi</span>
+    </a>
+  </div>
+</nav>
+
+<!-- BROWSER NOTE — injected dynamically based on detected browser -->
+<div id="browserNote" style="display:none;align-items:center;gap:8px;background:rgba(251,191,36,.07);border-bottom:1px solid rgba(251,191,36,.15);padding:8px 20px;font-size:11.5px;color:rgba(255,255,255,.65);letter-spacing:.2px;line-height:1.4;position:relative;z-index:50;">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:#fbbf24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <span id="browserNoteText"></span>
+  <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.35);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;margin-left:auto;flex-shrink:0;">✕</button>
+</div>
+<script>
+(function(){
+  var note = document.getElementById('browserNote');
+  var txt  = document.getElementById('browserNoteText');
+  if(!note || !txt) return;
+  var env = browserEnv;
+  if(env.isInApp){
+    txt.innerHTML = '<strong style="color:#fbbf24">' + env.appName + ' blocks live video.</strong> &nbsp;·&nbsp; Tap <strong style="color:#fff">Play</strong> and we\'ll open it in your browser automatically.';
+    note.style.display = 'flex';
+  } else if(env.isSafari){
+    txt.innerHTML = '<strong style="color:#fbbf24">Safari tip:</strong> &nbsp;Tap <strong style="color:#fff">Play</strong> to start — stream may take a few extra seconds to buffer on Safari.';
+    note.style.display = 'flex';
+  }
+  /* Chrome / Firefox: no banner needed */
+})();
+</script>
+
+<style>
+/* remove old static .browser-note if any lingered */
+.browser-note{ display:none !important; }
+</style>
+
+
+
+<!-- PLAYER -->
+<div class="player-section">
+
+  <div class="player-wrap" id="playerWrap">
+    <div class="player-aspect" id="playerAspect">
+
+      <iframe id="liveIframe"
+        src="about:blank"
+        style="position:absolute;inset:0;width:100%;height:100%;border:none;"
+        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+        allowfullscreen playsinline webkit-playsinline
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+
+      <!-- 5-second buffer overlay shown after play tap -->
+      <div id="bufferOverlay" style="display:none;position:absolute;inset:0;z-index:20;background:rgba(8,8,14,.88);flex-direction:column;align-items:center;justify-content:center;gap:14px;pointer-events:none;">
+        <div style="width:52px;height:52px;border-radius:50%;border:3px solid rgba(255,255,255,.08);border-top-color:#e63946;border-right-color:#f97316;animation:spin 1s linear infinite;"></div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:.5px;">Loading…</div>
+      </div>
+
+      <!-- Pre-play overlay: IPL banner + play button shown ONLY before first play, removed forever after -->
+      <div id="centerOverlay" onclick="onScreenClick()">
+        <img id="bannerImg"
+          src="https://brightcove.iplt20.com/output/input/6391650658112-1774497042.jpg"
+          alt="IPL 2026 Live"
+          draggable="false"
+          onerror="this.style.opacity='0'">
+        <div id="bannerVignette"></div>
+        <div id="bannerLiveBadge">
+          <span class="bpulse"></span>
+          LIVE &middot; IPL 2026
+        </div>
+        <div id="centerRing">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="44" height="44">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Silent tap zone after first play — invisible, no UI -->
+      <div id="tapZone" style="display:none;position:absolute;inset:0;z-index:8;cursor:pointer;" onclick="onScreenClick()"></div>
+
+    </div>
+  </div>
+
+  <!-- CONTROL BAR -->
+  <div class="ui-control-bar">
+
+    <!-- LEFT: Play/Pause -->
+    <button class="ui-btn ui-btn-play" id="btnPlay" onclick="togglePlay()" title="Play / Pause">
+      <svg id="playIcon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      <span id="playLabel">Play</span>
+    </button>
+
+    <!-- CENTER: channel info + delay badge -->
+    <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--rcb2);letter-spacing:.5px;flex:1;justify-content:center;">
+      <span style="width:7px;height:7px;background:var(--rcb);border-radius:50%;display:inline-block;animation:pulse 1.2s ease-in-out infinite;flex-shrink:0;"></span>
+      <span class="bar-ch-label" id="barChLabel">Star Sports 1 Hindi · Live</span>
+      <span class="delay-badge" id="delayBadgeMain"></span>
+    </div>
+
+    <!-- RIGHT: Language + Quality + Refresh + Fullscreen -->
+    <div style="display:flex;align-items:center;gap:8px;">
+
+      <!-- Language toggle -->
+      <div class="lang-wrap" id="langWrap">
+        <button class="ui-btn ui-btn-lang" onclick="toggleLangMenu(event)" title="Language">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
+          <span id="curLang">HI</span>
+        </button>
+        <div class="lang-menu" id="langMenu" style="display:none;">
+          <button class="l-opt" onclick="setLanguage(this,'HI','Hindi')" id="lOptHi">🇮🇳 Hindi</button>
+          <button class="l-opt" onclick="setLanguage(this,'EN','English')" id="lOptEn">🏏 English</button>
+          <button class="l-opt" onclick="setLanguage(this,'TA','Tamil')" id="lOptTa">🎙 Tamil</button>
+          <button class="l-opt" onclick="setLanguage(this,'TE','Telugu')" id="lOptTe">📺 Telugu</button>
+        </div>
+      </div>
+
+      <div class="quality-wrap" id="qualityWrap">
+        <button class="ui-btn ui-btn-q" onclick="toggleQualityMenu(event)" title="Quality">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a6.94 6.94 0 00-1.62-.94l-.36-2.54A.484.484 0 0014 2h-4a.484.484 0 00-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 00-.59.22L2.74 8.87a.47.47 0 00.12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.27.41.49.41h4c.22 0 .44-.17.49-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 00-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          <span id="curQuality">Auto</span>
+        </button>
+        <div class="quality-menu" id="qualityMenu" style="display:none;">
+          <button class="q-opt active" id="qOptAuto" onclick="setQuality(this,'Auto',null)">Auto</button>
+          <button class="q-opt" id="qOpt1080" onclick="setQuality(this,'1080p','1080')">1080p</button>
+          <button class="q-opt" id="qOpt720"  onclick="setQuality(this,'720p','720')">720p</button>
+          <button class="q-opt" id="qOpt480"  onclick="setQuality(this,'480p','480')">480p</button>
+          <button class="q-opt" id="qOpt360"  onclick="setQuality(this,'360p','360')">360p</button>
+        </div>
+      </div>
+
+      <button class="ui-btn ui-btn-refresh" id="btnRefresh" onclick="goLiveOrRefresh('main')" title="Go Live / Refresh">
+        <svg id="btnRefreshIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        <span class="refresh-label" id="btnRefreshLbl">Refresh</span>
+      </button>
+
+      <button class="ui-btn ui-btn-fs" onclick="goFullscreen()" title="Fullscreen">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        <span class="fs-label">Fullscreen</span>
+      </button>
+
+      <button class="ui-btn ui-btn-pip" id="btnPip" onclick="togglePip()" title="Picture-in-Picture">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 7h-8v6h8V7zm2-4H3C1.9 3 1 3.9 1 5v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z"/></svg>
+      </button>
+
+    </div>
+  </div>
+
+</div>
+
+<style>
+/* ── PLAYER UI ── */
+.player-wrap{position:relative;}
+
+/* ── PRE-PLAY OVERLAY — visible only before first tap ── */
+#centerOverlay{
+  position:absolute;inset:0;z-index:9;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  background:#000;
+  -webkit-tap-highlight-color:transparent;
+  overflow:hidden;
+}
+#bannerImg{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center;
+  display:block;
+  /* 85% opacity so overlay elements read clearly */
+  opacity:.85;
+  transition:opacity .3s;
+}
+#centerOverlay:hover #bannerImg{ opacity:.92; }
+
+/* gradient vignette so play button pops */
+#bannerVignette{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at center, rgba(0,0,0,.15) 0%, rgba(0,0,0,.55) 100%);
+  pointer-events:none;
+}
+
+#centerRing{
+  position:relative;z-index:2;
+  width:80px;height:80px;border-radius:50%;
+  background:rgba(230,57,70,.88);
+  border:2.5px solid rgba(255,255,255,.45);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;
+  box-shadow:0 0 0 14px rgba(230,57,70,.18), 0 8px 40px rgba(0,0,0,.7), 0 0 60px rgba(230,57,70,.3);
+  transition:transform .15s, box-shadow .15s;
+  pointer-events:none;
+}
+/* IPL LIVE badge above play button */
+#bannerLiveBadge{
+  position:absolute;z-index:2;
+  top:50%;left:50%;
+  transform:translate(-50%,-80px);
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(8,8,14,.75);border:1px solid rgba(230,57,70,.45);
+  padding:4px 12px;border-radius:20px;
+  font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:1.2px;color:#fff;white-space:nowrap;
+  pointer-events:none;
+  backdrop-filter:blur(6px);
+}
+#bannerLiveBadge .bpulse{
+  width:6px;height:6px;background:#e63946;border-radius:50%;
+  animation:pulse 1.4s ease-in-out infinite;flex-shrink:0;
+}
+
+#centerOverlay:active #centerRing,
+#centerOverlay:hover  #centerRing{
+  transform:scale(1.1);
+  box-shadow:0 0 0 20px rgba(230,57,70,.14), 0 8px 40px rgba(0,0,0,.7), 0 0 80px rgba(230,57,70,.35);
+}
+
+/* ── Mobile viewport-aware sizing ── */
+@media(max-width:600px){
+  #centerRing{width:64px;height:64px;}
+  #centerRing svg{width:32px;height:32px;}
+  #bannerLiveBadge{font-size:10px;transform:translate(-50%,-64px);}
+}
+@media(max-width:379px){
+  #centerRing{width:54px;height:54px;}
+  #centerRing svg{width:26px;height:26px;}
+  #bannerLiveBadge{font-size:9px;transform:translate(-50%,-56px);}
+}
+@keyframes btnFlash{0%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.9)}100%{opacity:0;transform:scale(1.15);}}
+
+/* CONTROL BAR */
+.ui-control-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:var(--bg2);border:1px solid var(--border);border-top:none;
+  border-radius:0 0 18px 18px;padding:10px 14px;flex-wrap:nowrap;
+}
+.ui-btn{
+  display:flex;align-items:center;gap:5px;
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--muted2);font-size:11px;font-weight:700;letter-spacing:.8px;
+  padding:7px 14px;border-radius:20px;cursor:pointer;
+  transition:all .18s;white-space:nowrap;font-family:'DM Sans',sans-serif;
+  flex-shrink:0;
+}
+.ui-btn:hover{background:var(--bg4);color:var(--text);border-color:rgba(255,255,255,.15);}
+.ui-btn:active{transform:scale(.95);}
+
+.ui-btn-play{color:var(--text);border-color:rgba(255,255,255,.12);}
+.ui-btn-play.playing{color:var(--rcb2);border-color:rgba(230,57,70,.3);background:rgba(230,57,70,.08);}
+
+.quality-wrap{position:relative;}
+.ui-btn-q{color:var(--muted2);}
+.quality-menu{
+  position:absolute;bottom:calc(100% + 8px);right:0;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;min-width:90px;
+  box-shadow:0 8px 30px rgba(0,0,0,.6);z-index:100;
+}
+.q-opt{
+  display:block;width:100%;text-align:left;
+  padding:9px 14px;font-size:11px;font-weight:700;letter-spacing:.6px;
+  color:var(--muted2);background:none;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:background .15s,color .15s;
+}
+.q-opt:hover{background:var(--bg4);color:var(--text);}
+.q-opt.active{color:var(--srh);}
+.ui-btn-fs{color:var(--muted2);}
+.ui-btn-lang{color:var(--text);border-color:rgba(255,255,255,.12);}
+.ui-btn-lang.lang-en{color:var(--srh);border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.08);}
+
+/* Language dropdown */
+.lang-wrap{position:relative;}
+.lang-menu{
+  position:absolute;bottom:calc(100% + 8px);right:0;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;min-width:110px;
+  box-shadow:0 8px 30px rgba(0,0,0,.6);z-index:100;
+}
+.l-opt{
+  display:block;width:100%;text-align:left;
+  padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:.5px;
+  color:var(--muted2);background:none;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:background .15s,color .15s;
+}
+.l-opt:hover{background:var(--bg4);color:var(--text);}
+.l-opt.active{color:var(--srh);}
+
+/* ══════════════════════════════════════════
+   PC FULLSCREEN CUSTOM OVERLAY
+   ══════════════════════════════════════════ */
+#pcFs{
+  display:none;
+  position:fixed;inset:0;z-index:8000;
+  background:#000;
+  align-items:stretch;justify-content:center;flex-direction:column;
+}
+#pcFs.active{ display:flex; }
+
+/* iframe fills entire screen — pointer-events blocked */
+#pcFs iframe{
+  position:absolute;inset:0;width:100%;height:100%;border:none;
+  pointer-events:none; /* block embedded controls */
+  user-select:none;-webkit-user-select:none;
+}
+
+/* transparent click-catcher on top of iframe */
+#pcFsTouchBlock{
+  position:absolute;inset:0;z-index:8010;
+  cursor:pointer;background:transparent;
+  pointer-events:auto;
+}
+
+/* control bar — slides in from bottom, auto-hides */
+#pcFsControls{
+  position:absolute;bottom:0;left:0;right:0;z-index:8020;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:14px 20px 18px;
+  background:linear-gradient(0deg,rgba(0,0,0,.88) 0%,rgba(0,0,0,0) 100%);
+  pointer-events:auto;
+  opacity:1;transition:opacity .35s;
+}
+#pcFsControls.hidden{ opacity:0;pointer-events:none; }
+
+/* reuse .mfs-btn style for pc fs btns */
+.pcfs-btn{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.13);
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:12px;font-weight:700;letter-spacing:.7px;
+  padding:8px 16px;border-radius:20px;cursor:pointer;
+  transition:background .15s,transform .12s;
+  white-space:nowrap;font-family:'DM Sans',sans-serif;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.pcfs-btn:hover{ background:rgba(255,255,255,.22); }
+.pcfs-btn:active{ transform:scale(.95); }
+.pcfs-btn svg{flex-shrink:0;}
+.pcfs-btn-play.pcfs-playing{
+  color:var(--rcb2);border-color:rgba(230,57,70,.45);background:rgba(230,57,70,.15);
+}
+.pcfs-btn-close{
+  background:rgba(230,57,70,.18);border-color:rgba(230,57,70,.4);
+}
+.pcfs-btn-close:hover{ background:rgba(230,57,70,.32); }
+.pcfs-btn-lang-en{
+  color:var(--srh);border-color:rgba(249,115,22,.35);background:rgba(249,115,22,.1);
+}
+
+/* centre live info */
+#pcFsLiveLabel{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  gap:6px;font-size:11px;font-weight:700;letter-spacing:.8px;
+  color:rgba(255,255,255,.8);pointer-events:none;
+}
+#pcFsLiveDot{
+  width:7px;height:7px;border-radius:50%;background:#e63946;
+  animation:pulse 1.4s ease-in-out infinite;flex-shrink:0;
+}
+
+/* PC FS quality menu */
+#pcFsQWrap{position:relative;}
+#pcFsQMenu{
+  position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;min-width:92px;
+  box-shadow:0 8px 30px rgba(0,0,0,.7);z-index:8030;display:none;
+}
+#pcFsQMenu.open{ display:block; }
+.pcfs-q-opt{
+  display:block;width:100%;text-align:left;
+  padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:.5px;
+  color:var(--muted2);background:none;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:background .13s,color .13s;
+}
+.pcfs-q-opt:hover{ background:var(--bg4);color:var(--text); }
+.pcfs-q-opt.active{ color:var(--srh); }
+
+/* PC FS language menu */
+#pcFsLangWrap{position:relative;}
+#pcFsLangMenu{
+  position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;min-width:115px;
+  box-shadow:0 8px 30px rgba(0,0,0,.7);z-index:8030;display:none;
+}
+#pcFsLangMenu.open{ display:block; }
+.pcfs-l-opt{
+  display:block;width:100%;text-align:left;
+  padding:10px 16px;font-size:11px;font-weight:700;letter-spacing:.5px;
+  color:var(--muted2);background:none;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:background .13s,color .13s;
+}
+.pcfs-l-opt:hover{ background:var(--bg4);color:var(--text); }
+.pcfs-l-opt.active{ color:var(--srh); }
+
+/* FULLSCREEN — desktop 16:9 */
+#playerWrap:-webkit-full-screen,
+#playerWrap:-moz-full-screen,
+#playerWrap:fullscreen{
+  width:100vw !important;height:100vh !important;
+  background:#000;display:flex;flex-direction:column;
+  align-items:stretch;justify-content:center;
+}
+#playerWrap:fullscreen .player-aspect,
+#playerWrap:-webkit-full-screen .player-aspect,
+#playerWrap:-moz-full-screen .player-aspect{
+  width:100%;flex:1;padding-bottom:0;
+  height:56.25vw;max-height:100vh;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE FULLSCREEN OVERLAY — auto-rotate + full-fit
+   ═══════════════════════════════════════════════════════
+   Strategy:
+   • #mobileFs = fixed black backdrop covering the real screen.
+   • #mfsInner = "virtual landscape canvas": always sized landscape.
+     JS sets its width/height to exact px, centres it, then rotates 90°
+     in portrait so the video + controls fill every pixel with no cuts.
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Backdrop ── */
+#mobileFs{
+  display:none;
+  position:fixed;inset:0;z-index:9000;
+  background:#000;
+  overflow:hidden;
+  touch-action:none;
+}
+#mobileFs.active{ display:block; }
+
+/* ── Inner canvas — JS sets width/height/transform inline ── */
+#mfsInner{
+  position:absolute;
+  /* JS centres it via top/left/transform — don't override here */
+  transform-origin:center center;
+  will-change:transform;
+  transition:transform .22s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── iframe fills #mfsInner completely ── */
+#mobileFsIframe{
+  position:absolute;
+  inset:0;
+  width:100%;height:100%;
+  border:none;
+  pointer-events:none;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+
+/* ── Touch-blocking pane (on top of iframe, below controls) ── */
+#mfsTouchBlock{
+  position:absolute;
+  inset:0;
+  z-index:9010;
+  touch-action:none;
+  pointer-events:auto;
+  background:transparent;
+}
+
+/* ── Custom control bar — sits at bottom of #mfsInner ── */
+#mfsControls{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  z-index:9020;
+  pointer-events:auto;
+  touch-action:auto;
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  padding:10px 16px max(12px, env(safe-area-inset-bottom));
+  background:linear-gradient(0deg,rgba(0,0,0,.92) 0%,rgba(0,0,0,0) 100%);
+  opacity:1;transition:opacity .4s;
+  box-sizing:border-box;
+  width:100%;
+  flex-wrap:nowrap;
+  overflow:visible; /* MUST be visible — overflow:hidden clips the dropdown menus */
+}
+#mfsControls.hidden{ opacity:0;pointer-events:none; }
+
+/* ── Shared button style for mfs controls ── */
+.mfs-btn{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.13);
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:11px;font-weight:700;letter-spacing:.7px;
+  padding:7px 14px;border-radius:20px;cursor:pointer;
+  transition:background .15s,transform .12s;
+  white-space:nowrap;font-family:'DM Sans',sans-serif;
+  flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.mfs-btn:active{ background:rgba(255,255,255,.25);transform:scale(.94); }
+.mfs-btn svg{ flex-shrink:0; }
+.mfs-btn-play.mfs-playing{
+  color:var(--rcb2);border-color:rgba(230,57,70,.45);
+  background:rgba(230,57,70,.15);
+}
+.mfs-btn-close{
+  background:rgba(230,57,70,.18);border-color:rgba(230,57,70,.4);color:#fff;
+}
+.mfs-btn-close:active{ background:rgba(230,57,70,.35); }
+
+/* live dot + label centre */
+#mfsLiveLabel{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  gap:5px;font-size:10px;font-weight:700;letter-spacing:.8px;
+  color:rgba(255,255,255,.8);pointer-events:none;
+}
+#mfsLiveDot{
+  width:6px;height:6px;border-radius:50%;background:#e63946;
+  animation:pulse 1.4s ease-in-out infinite;flex-shrink:0;
+}
+
+/* quality menu inside mfs */
+#mfsQWrap{ position:relative; }
+#mfsQMenu{
+  position:absolute;
+  bottom:calc(100% + 8px);
+  left:50%;transform:translateX(-50%);
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;min-width:88px;
+  box-shadow:0 8px 30px rgba(0,0,0,.7);
+  z-index:9050; /* above #mfsTouchBlock (9010) and #mfsControls (9020) */
+  display:none;
+}
+#mfsQMenu.open{ display:block; }
+.mfs-q-opt{
+  display:block;width:100%;text-align:left;
+  padding:9px 14px;font-size:11px;font-weight:700;letter-spacing:.5px;
+  color:var(--muted2);background:none;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:background .13s,color .13s;
+  -webkit-tap-highlight-color:transparent;
+}
+.mfs-q-opt:active{ background:var(--bg4); }
+.mfs-q-opt.active{ color:var(--srh); }
+
+/* ── Legacy close button hidden — we have our own ── */
+#mobileFsClose{ display:none !important; }
+
+/* ── Compact controls on very small screens ── */
+@media(max-width:480px){
+  #mfsControls{gap:4px;padding:8px 10px max(10px,env(safe-area-inset-bottom));}
+  .mfs-btn{padding:6px 10px;font-size:10px;gap:4px;}
+  .mfs-btn svg{width:12px;height:12px;}
+  #mfsLiveLabel{font-size:9px;}
+}
+@media(max-width:360px){
+  .mfs-btn{padding:5px 8px;font-size:9px;}
+  #mfsLiveLabel{display:none;}
+}
+
+/* ── Go Live button state ── */
+.go-live-btn{
+  background:rgba(230,57,70,.22) !important;
+  border-color:rgba(230,57,70,.7) !important;
+  color:#ff5c67 !important;
+  animation:goLivePulse 1.5s ease-in-out infinite;
+}
+@keyframes goLivePulse{
+  0%,100%{ box-shadow:0 0 0 0 rgba(230,57,70,.5); }
+  50%{ box-shadow:0 0 0 6px rgba(230,57,70,0); }
+}
+/* ── Delay badge ── */
+.delay-badge{
+  display:none;
+  align-items:center;
+  background:rgba(230,57,70,.15);
+  border:1px solid rgba(230,57,70,.35);
+  color:#ff8090;
+  font-size:9px;font-weight:800;letter-spacing:.8px;
+  padding:2px 6px;border-radius:10px;
+  font-family:'DM Sans',sans-serif;
+  white-space:nowrap;flex-shrink:0;
+  pointer-events:none;
+}
+  .fs-label{display:none;}
+  .refresh-label{display:none;}
+  .bar-ch-label{display:none;}
+  .ui-btn{padding:6px 10px;font-size:10px;gap:4px;}
+  .ui-btn svg{width:12px;height:12px;}
+  .ui-control-bar{padding:8px 10px;gap:5px;}
+}
+@media(max-width:400px){
+  .ui-btn{padding:5px 8px;font-size:9px;}
+  .ui-control-bar{gap:4px;padding:7px 8px;}
+}
+</style>
+
+<script>
+var isPlaying  = false;
+var everPlayed = false;   // true after first tap — big play button never comes back
+var curLang    = 'HI';    // 'HI' = Hindi, 'EN' = English, 'TA' = Tamil, 'TE' = Telugu
+var langBase   = { HI:'https://allrounder-live2.pages.dev/channel/hotstar', EN:'https://allrounder-live2.pages.dev/channel/hotstar', TA:'https://allrounder-live2.pages.dev/channel/hotstar', TE:'https://allrounder-live2.pages.dev/channel/hotstar' };
+var langLabel  = { HI:'Star Sports 1 Hindi · Live', EN:'Star Sports 1 English · Live', TA:'Star Sports 1 Tamil · Live', TE:'Star Sports 1 Telugu · Live' };
+var curQSuffix = null;    // null = Auto, '1080','720','480','360'
+var liveURL    = langBase['HI'];
+var bufferTimer = null;
+var bufferStart = 0;
+
+/* Build URL from current lang + quality suffix */
+function buildURL(lang, qSuffix){
+  var base = langBase[lang] || langBase['HI'];
+  return qSuffix ? base + '?q=' + qSuffix : base;
+}
+
+/* Apply language globally — updates liveURL, all labels, button states */
+function applyLanguage(lang){
+  curLang = lang;
+  liveURL = buildURL(lang, curQSuffix);
+
+  /* normal bar */
+  var cl = document.getElementById('curLang');
+  var lb = document.getElementById('barChLabel');
+  var lw = document.getElementById('langWrap');
+  var hi = document.getElementById('lOptHi');
+  var en = document.getElementById('lOptEn');
+  if(cl) cl.textContent = lang;
+  if(lb) lb.textContent = langLabel[lang];
+  if(lw){ lw.querySelector('.ui-btn-lang') && lw.querySelector('.ui-btn-lang').classList.toggle('lang-en', lang==='EN'); }
+  if(hi) hi.classList.toggle('active', lang==='HI');
+  if(en) en.classList.toggle('active', lang==='EN');
+  var ta = document.getElementById('lOptTa');
+  var te = document.getElementById('lOptTe');
+  if(ta) ta.classList.toggle('active', lang==='TA');
+  if(te) te.classList.toggle('active', lang==='TE');
+
+  /* pc fs */
+  var pcCl  = document.getElementById('pcFsCurLang');
+  var pcCh  = document.getElementById('pcFsChLabel');
+  var pcLb  = document.getElementById('pcFsLangBtn');
+  if(pcCl) pcCl.textContent = lang;
+  if(pcCh) pcCh.textContent = langLabel[lang];
+  if(pcLb) pcLb.classList.toggle('pcfs-btn-lang-en', lang==='EN');
+  document.querySelectorAll('.pcfs-l-opt').forEach(function(b){
+    var t = b.textContent;
+    b.classList.toggle('active', (lang==='HI' && t.includes('Hindi')) || (lang==='EN' && t.includes('English')) || (lang==='TA' && t.includes('Tamil')) || (lang==='TE' && t.includes('Telugu')));
+  });
+
+  /* mobile fs */
+  var mfCl = document.getElementById('mfsCurLang');
+  var mfCh = document.getElementById('mfsChLabel');
+  if(mfCl) mfCl.textContent = lang;
+  if(mfCh) mfCh.textContent = langLabel[lang].replace(' · Live','');
+  document.querySelectorAll('#mfsLangMenu .mfs-q-opt').forEach(function(b){
+    var t = b.textContent;
+    b.classList.toggle('active', (lang==='HI' && t.includes('Hindi')) || (lang==='EN' && t.includes('English')) || (lang==='TA' && t.includes('Tamil')) || (lang==='TE' && t.includes('Telugu')));
+  });
+
+  /* also refresh quality menus with new base URLs */
+  updateQualityMenuURLs();
+}
+
+/* Rebuild quality menu URLs when lang changes */
+function updateQualityMenuURLs(){ /* URLs are computed on-the-fly from buildURL(), nothing static to update */ }
+
+/* ── Language menu — normal bar ── */
+function toggleLangMenu(e){
+  e.stopPropagation();
+  var m = document.getElementById('langMenu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('qualityMenu').style.display = 'none';
+}
+function setLanguage(el, code, label){
+  document.getElementById('langMenu').style.display = 'none';
+  applyLanguage(code);
+  if(isPlaying) reloadStream();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BROWSER DETECTION — precise UA sniffing
+   ═══════════════════════════════════════════════════════════ */
+var _ua  = navigator.userAgent || '';
+var _nav = navigator;
+
+var browserEnv = (function(){
+  var ua = _ua;
+  var isIOS     = /iPhone|iPad|iPod/i.test(ua);
+  var isAndroid = /Android/i.test(ua);
+
+  /* In-app webview detection — order matters (most specific first) */
+  var isInstagram   = /Instagram/i.test(ua);
+  var isWhatsApp    = /WhatsApp/i.test(ua);
+  var isFacebook    = /FBAN|FBAV|FB_IAB|FBIOS|FBSV/i.test(ua);
+  var isTelegram    = /Telegram/i.test(ua);
+  var isTwitter     = /Twitter/i.test(ua);
+  var isTikTok      = /musical_ly|TikTok/i.test(ua);
+  var isLinkedIn    = /LinkedInApp/i.test(ua);
+  var isSnapchat    = /Snapchat/i.test(ua);
+  var isLine        = /Line\//i.test(ua);
+  var isWechat      = /MicroMessenger/i.test(ua);
+
+  /* Generic WKWebView / Android WebView detection */
+  var isWKWebView   = isIOS && !(/Safari\//.test(ua)) && !(/CriOS|EdgiOS|FxiOS|OPiOS/.test(ua));
+  var isAndroidWV   = isAndroid && /wv|Version\/\d/.test(ua) && !/Chrome\/\d/.test(ua);
+
+  var isInApp = isInstagram || isWhatsApp || isFacebook || isTelegram ||
+                isTwitter || isTikTok || isLinkedIn || isSnapchat ||
+                isLine || isWechat || isWKWebView || isAndroidWV;
+
+  /* Real browsers that can play but have restrictions */
+  var isSafari      = !isInApp && isIOS && /Safari\//.test(ua);
+  var isChrome      = /CriOS|Chrome\//.test(ua) && !/Edg\/|OPR\//.test(ua);
+  var isChromeIOS   = /CriOS/.test(ua);
+  var isFirefoxIOS  = /FxiOS/.test(ua);
+
+  /* Name for display */
+  var appName = isInstagram ? 'Instagram' : isWhatsApp ? 'WhatsApp' :
+                isFacebook  ? 'Facebook'  : isTelegram ? 'Telegram' :
+                isTwitter   ? 'Twitter/X' : isTikTok   ? 'TikTok'  :
+                isLinkedIn  ? 'LinkedIn'  : isSnapchat  ? 'Snapchat':
+                isLine      ? 'Line'      : isWechat    ? 'WeChat'  :
+                isWKWebView ? 'this app'  : 'this browser';
+
+  return {
+    ua:ua, isIOS:isIOS, isAndroid:isAndroid,
+    isInApp:isInApp, isSafari:isSafari,
+    isChrome:isChrome, isChromeIOS:isChromeIOS, isFirefoxIOS:isFirefoxIOS,
+    appName:appName,
+    isInstagram:isInstagram, isWhatsApp:isWhatsApp, isFacebook:isFacebook
+  };
+})();
+
+/* Legacy alias used by older code paths */
+var isInAppBrowser = browserEnv.isInApp;
+
+/* ═══════════════════════════════════════════════════════════
+   REDIRECT / OPEN-IN-BROWSER — smart chain per platform
+   ═══════════════════════════════════════════════════════════ */
+function redirectToDefaultBrowser(){
+  var url = location.href;
+  var ua  = browserEnv.ua;
+
+  /* ── Android in-app ── */
+  if(browserEnv.isAndroid){
+    /* 1. intent:// — works for Instagram, WhatsApp, Telegram on Android */
+    var intent = 'intent://' + url.replace(/^https?:\/\//, '') +
+      '#Intent;scheme=https;package=com.android.chrome;action=android.intent.action.VIEW;end';
+    try{ location.href = intent; }catch(e){}
+
+    /* 2. After 1.4s, if still in app try generic browser intent */
+    setTimeout(function(){
+      if(document.hidden) return; /* already left */
+      try{
+        location.href = 'intent://' + url.replace(/^https?:\/\//, '') +
+          '#Intent;scheme=https;action=android.intent.action.VIEW;end';
+      }catch(e){}
+    }, 1400);
+
+    /* 3. Final fallback: show copy overlay */
+    setTimeout(function(){
+      if(!document.hidden) showCopyOverlay(url);
+    }, 2800);
+    return;
+  }
+
+  /* ── iOS in-app ── */
+  if(browserEnv.isIOS){
+    /* Instagram iOS: try the in-app "Open in Safari" trick via about:blank hop */
+    if(browserEnv.isInstagram){
+      /* Instagram iOS doesn't honour googlechrome:// — only Safari opens */
+      /* Trick: navigate to a blank page then back causes it to offer "Open in Safari" on some versions */
+      try{
+        var a = document.createElement('a');
+        a.href = url; a.target = '_blank'; a.rel = 'noreferrer';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      }catch(e){}
+    }
+
+    /* Try x-safari-https:// (opens Safari on iOS from any in-app browser) */
+    setTimeout(function(){
+      if(document.hidden) return;
+      try{ location.href = url.replace(/^https:\/\//, 'x-safari-https://'); }catch(e){}
+    }, 300);
+
+    /* Try googlechrome:// (works if Chrome is installed) */
+    setTimeout(function(){
+      if(document.hidden) return;
+      try{ location.href = url.replace(/^https/, 'googlechrome'); }catch(e){}
+    }, 900);
+
+    /* Final fallback: copy overlay */
+    setTimeout(function(){
+      if(!document.hidden) showCopyOverlay(url);
+    }, 2000);
+    return;
+  }
+
+  /* Desktop in-app (rare) — just show copy overlay */
+  showCopyOverlay(url);
+}
+
+/* ── Copy-link overlay (last resort) ── */
+function showCopyOverlay(url){
+  if(document.getElementById('icn-copy-overlay')) return;
+  var appName = browserEnv.appName;
+  var d = document.createElement('div');
+  d.id  = 'icn-copy-overlay';
+  d.style.cssText = [
+    'position:fixed;inset:0;z-index:999999',
+    'background:rgba(6,6,12,.97)',
+    'display:flex;flex-direction:column;align-items:center;justify-content:center',
+    'gap:14px;padding:32px 24px;text-align:center',
+    'font-family:DM Sans,sans-serif'
+  ].join(';');
+
+  var steps = browserEnv.isIOS
+    ? '1. Tap <strong style="color:#fff">⋯</strong> or <strong style="color:#fff">⋮</strong> menu above<br>2. Choose <strong style="color:#fff">Open in Safari</strong> or <strong style="color:#fff">Open in Browser</strong>'
+    : '1. Tap <strong style="color:#fff">⋮</strong> menu<br>2. Choose <strong style="color:#fff">Open in Chrome</strong> or <strong style="color:#fff">Open in browser</strong>';
+
+  d.innerHTML = [
+    '<div style="font-size:40px">🌐</div>',
+    '<div style="font-family:Bebas Neue,sans-serif;font-size:28px;letter-spacing:2px;color:#fff;line-height:1">Open in Browser</div>',
+    '<div style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.7;max-width:290px">',
+      '<strong style="color:#fbbf24">' + appName + '</strong> blocks live video.<br>' + steps,
+    '</div>',
+    '<div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px">',
+      '<button id="icn-copy-btn" style="padding:14px 0;background:linear-gradient(135deg,#e63946,#f97316);color:#fff;font-weight:800;font-size:14px;border:none;border-radius:14px;cursor:pointer;letter-spacing:.5px;width:100%;touch-action:manipulation">',
+        '📋 Copy Link',
+      '</button>',
+      '<button onclick="document.getElementById(\'icn-copy-overlay\').remove()" style="padding:11px 0;background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.12);border-radius:14px;cursor:pointer;width:100%;touch-action:manipulation">',
+        'Dismiss',
+      '</button>',
+    '</div>',
+    '<div style="font-size:10px;color:rgba(255,255,255,.22);margin-top:4px">Then paste in Chrome or Safari to watch live</div>'
+  ].join('');
+
+  document.body.appendChild(d);
+
+  /* Wire copy button after DOM insert */
+  document.getElementById('icn-copy-btn').addEventListener('click', function(){
+    var btn = this;
+    var fallback = function(){
+      var ta = document.createElement('textarea');
+      ta.value = url; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try{ document.execCommand('copy'); }catch(e2){}
+      document.body.removeChild(ta);
+    };
+    if(_nav.clipboard && _nav.clipboard.writeText){
+      _nav.clipboard.writeText(url).then(function(){
+        btn.textContent = '✓ Copied! Paste in Chrome / Safari';
+        btn.style.background = '#16a34a';
+      }).catch(fallback);
+    } else { fallback(); btn.textContent = '✓ Copied! Paste in Chrome / Safari'; btn.style.background = '#16a34a'; }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SAFARI AUTOPLAY FIX
+   Safari requires a direct user-gesture to start media.
+   When we detect real Safari (not in-app), we load the iframe
+   directly on the tap event (already inside a click handler)
+   and add playsinline to help. No extra action needed since
+   iframe src is set inside onScreenClick() → startStream()
+   which IS inside a user gesture. The buffer overlay is shown
+   for 7s on Safari (streams take longer to buffer).
+   ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   STREAM ENGINE — wall-clock lag detection + Go Live + delay badge
+   ═══════════════════════════════════════════════════════════
+   Cross-origin iframes cannot be polled — postMessage only works
+   if the stream page explicitly sends it (it doesn't).
+   So we use a wall-clock elapsed timer instead:
+   • Every second, increment a delay counter from when stream loaded.
+   • HLS live streams accumulate real latency over time.
+   • Show delay as "+Xs" badge in the control bar.
+   • When delay > GO_LIVE_AFTER seconds, flip all Refresh → Go Live.
+   • Tapping Go Live reloads with cache-bust, resetting the clock.
+   ═══════════════════════════════════════════════════════════ */
+
+var GO_LIVE_AFTER  = 45;   /* seconds behind before showing Go Live */
+var DELAY_HIDE     = 10;   /* hide delay badge for first N seconds (buffering) */
+var lagWatchdog    = null;
+var delaySeconds   = 0;
+var isLagging      = false;
+var streamLoadTime = 0;
+
+function cacheBust(url){
+  var sep = url.indexOf('?') >= 0 ? '&' : '?';
+  return url + sep + '_cb=' + Date.now();
+}
+
+/* Buffer overlay */
+var BUFFER_MIN  = 2000;
+var BUFFER_MAX  = browserEnv.isSafari ? 9000 : 6000;
+
+function showBufferLoading(){
+  clearTimeout(bufferTimer);
+  bufferStart = Date.now();
+  var buf = document.getElementById('bufferOverlay');
+  if(buf) buf.style.display = 'flex';
+  bufferTimer = setTimeout(hideBufferLoading, BUFFER_MAX);
+}
+function hideBufferLoading(){
+  clearTimeout(bufferTimer);
+  var elapsed = Date.now() - bufferStart;
+  var remain  = Math.max(0, BUFFER_MIN - elapsed);
+  setTimeout(function(){
+    var buf = document.getElementById('bufferOverlay');
+    if(buf) buf.style.display = 'none';
+  }, remain);
+}
+
+/* ── Delay badge update — runs every second ── */
+var _goLiveIcon  = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>';
+var _refreshIcon = '<path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>';
+
+function updateDelayBadges(){
+  var txt = '';
+  if(delaySeconds >= DELAY_HIDE){
+    txt = delaySeconds >= 60
+      ? '+' + Math.floor(delaySeconds/60) + ':' + ('0'+(delaySeconds%60)).slice(-2)
+      : '+' + delaySeconds + 's';
+  }
+  ['delayBadgeMain','delayBadgePcFs','delayBadgeMfs'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = txt;
+    el.style.display = txt ? 'inline-flex' : 'none';
+  });
+}
+
+function setLagging(lagging){
+  isLagging = lagging;
+  var map = [
+    {btn:'btnRefresh',     icon:'btnRefreshIcon',  lbl:'btnRefreshLbl',  mfsOnly:false},
+    {btn:'pcFsBtnRefresh', icon:'pcFsRefreshIcon', lbl:'pcFsRefreshLbl', mfsOnly:false},
+    {btn:'mfsBtnRefresh',  icon:'mfsRefreshIcon',  lbl:'mfsRefreshLbl',  mfsOnly:true }
+  ];
+  map.forEach(function(m){
+    var btn = document.getElementById(m.btn);
+    var svg = document.getElementById(m.icon);
+    var lbl = document.getElementById(m.lbl);
+    if(btn){
+      lagging ? btn.classList.add('go-live-btn') : btn.classList.remove('go-live-btn');
+      btn.title = lagging ? 'Go Live — tap to catch up' : 'Refresh';
+    }
+    if(svg) svg.innerHTML = lagging ? _goLiveIcon : _refreshIcon;
+    if(lbl) lbl.textContent = lagging ? '🔴 Go Live' : (m.mfsOnly ? '' : 'Refresh');
+  });
+}
+
+/* ── Wall-clock watchdog: 1 tick per second ── */
+function startLagWatchdog(){
+  stopLagWatchdog();
+  delaySeconds   = 0;
+  streamLoadTime = Date.now();
+  setLagging(false);
+  updateDelayBadges();
+  lagWatchdog = setInterval(function(){
+    if(!isPlaying){ stopLagWatchdog(); return; }
+    delaySeconds++;
+    updateDelayBadges();
+    if(delaySeconds >= GO_LIVE_AFTER && !isLagging) setLagging(true);
+  }, 1000);
+}
+function stopLagWatchdog(){
+  clearInterval(lagWatchdog);
+  lagWatchdog  = null;
+  delaySeconds = 0;
+  setLagging(false);
+  updateDelayBadges();
+}
+
+/* ── Core reload ── */
+function reloadStream(){
+  var url       = cacheBust(liveURL);
+  var mainIf    = document.getElementById('liveIframe');
+  var mfIf      = document.getElementById('mobileFsIframe');
+  var pcIf      = document.getElementById('pcFsIframe');
+  var mfsActive = document.getElementById('mobileFs').classList.contains('active');
+  var pcActive  = document.getElementById('pcFs').classList.contains('active');
+
+  showBufferLoading();
+  setLagging(false);
+
+  if(mfsActive){
+    if(mfIf)   mfIf.src   = url;
+    if(mainIf) mainIf.src = 'about:blank';
+  } else if(pcActive){
+    if(pcIf)   pcIf.src   = url;
+    if(mainIf) mainIf.src = 'about:blank';
+  } else {
+    if(mainIf) mainIf.src = url;
+  }
+  /* Restart wall-clock timer */
+  startLagWatchdog();
+}
+
+/* ── Unified Go Live / Refresh handler ── */
+function goLiveOrRefresh(ctx){
+  if(!isPlaying) return;
+  var iconId = ctx==='pcfs' ? 'pcFsRefreshIcon' : ctx==='mfs' ? 'mfsRefreshIcon' : 'btnRefreshIcon';
+  var icon = document.getElementById(iconId);
+  if(icon && !isLagging){
+    icon.style.transition = 'transform .5s ease';
+    icon.style.transform  = 'rotate(360deg)';
+    setTimeout(function(){ icon.style.transform=''; icon.style.transition=''; }, 560);
+  }
+  reloadStream();
+  if(ctx==='pcfs') pcFsShowControls();
+  if(ctx==='mfs')  mfsShowControls();
+}
+
+/* Legacy aliases */
+function refreshStream(){ goLiveOrRefresh('main'); }
+function pcFsRefresh()  { goLiveOrRefresh('pcfs'); }
+function mfsRefresh()   { goLiveOrRefresh('mfs');  }
+
+/* wireIframeLoad kept as no-op for compatibility */
+function wireIframeLoad(){}
+
+/* ── First tap on big play overlay ── */
+function onScreenClick(){
+  if(browserEnv.isInApp){
+    /* Show copy overlay immediately — redirect attempts happen in background.
+       User has something to do while we try to open external browser. */
+    showCopyOverlay(location.href);
+    redirectToDefaultBrowser();
+    return;
+  }
+  if(!everPlayed) startStream();
+}
+
+/* ── Permanently remove big play overlay after first tap ── */
+function removePlayOverlay(){
+  var ov = document.getElementById('centerOverlay');
+  if(ov){
+    ov.style.transition = 'opacity .3s';
+    ov.style.opacity = '0';
+    ov.style.pointerEvents = 'none';
+    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 350);
+  }
+  // tapZone stays but is fully transparent — no visual, no icon, no dim
+  var tz = document.getElementById('tapZone');
+  if(tz) tz.style.display = 'block';
+}
+
+/* ── Start stream (first time only) ── */
+function startStream(){
+  var btnPlay  = document.getElementById('btnPlay');
+  var playIcon = document.getElementById('playIcon');
+  var playLbl  = document.getElementById('playLabel');
+
+  everPlayed = true;
+  isPlaying  = true;
+
+  removePlayOverlay();
+
+  if(playIcon) playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+  if(playLbl)  playLbl.textContent = 'Pause';
+  if(btnPlay)  btnPlay.classList.add('playing');
+
+  /* Wire iframe load events once */
+  wireIframeLoad(document.getElementById('liveIframe'));
+  wireIframeLoad(document.getElementById('mobileFsIframe'));
+  wireIframeLoad(document.getElementById('pcFsIframe'));
+
+  reloadStream();
+  startLagWatchdog();
+}
+
+/* ── Toggle play/pause via bottom bar only ── */
+function togglePlay(){
+  var iframe   = document.getElementById('liveIframe');
+  var btnPlay  = document.getElementById('btnPlay');
+  var playIcon = document.getElementById('playIcon');
+  var playLbl  = document.getElementById('playLabel');
+
+  if(!everPlayed){ startStream(); return; }
+
+  if(isPlaying){
+    iframe.src = 'about:blank';
+    hideBufferLoading();
+    stopLagWatchdog();
+    setLagging(false);
+    if(playIcon) playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+    if(playLbl)  playLbl.textContent = 'Play';
+    if(btnPlay)  btnPlay.classList.remove('playing');
+    isPlaying = false;
+  } else {
+    if(playIcon) playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+    if(playLbl)  playLbl.textContent = 'Pause';
+    if(btnPlay)  btnPlay.classList.add('playing');
+    isPlaying = true;
+    reloadStream();
+    startLagWatchdog();
+  }
+}
+
+/* ── Fullscreen: custom overlay for both PC and mobile ── */
+function goFullscreen(){
+  var isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(isMobile){ openMobileFs(); return; }
+  /* PC — our own custom overlay, no rotation, no native fullscreen chrome */
+  openPcFs();
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE FS — pixel-perfect rotation + full-fit sizing
+   ══════════════════════════════════════════════════════════
+   mfsLayout() runs on open + every resize/orientationchange.
+   It reads the TRUE screen dimensions (window.screen.width/height
+   which always reflect physical pixels independent of orientation),
+   then:
+     LANDSCAPE: inner = screenW × screenH, no rotation.
+     PORTRAIT : inner = screenH × screenW (swapped), rotated 90°,
+                centred at (50vw, 50vh).
+   This guarantees the video fills 100% of the display with
+   zero letterboxing and zero cuts.
+   ══════════════════════════════════════════════════════════ */
+
+function mfsLayout(){
+  var inner   = document.getElementById('mfsInner');
+  var overlay = document.getElementById('mobileFs');
+  if(!inner || !overlay || !overlay.classList.contains('active')) return;
+
+  /* Use visualViewport when available for notch-safe dimensions */
+  var vvw = window.visualViewport ? window.visualViewport.width  : window.innerWidth;
+  var vvh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+
+  /* Detect portrait: taller than wide */
+  var portrait = vvh > vvw;
+
+  if(portrait){
+    /* Canvas must be landscape-shaped: width = vvh, height = vvw */
+    var cw = vvh;   /* canvas width  (the long side) */
+    var ch = vvw;   /* canvas height (the short side) */
+
+    /* Scale so the long side fits the short real dimension.
+       Both axes will fill because we swap w/h exactly. */
+    var scale = 1; /* no extra scale needed — dimensions already map exactly */
+
+    inner.style.width  = cw + 'px';
+    inner.style.height = ch + 'px';
+
+    /* Centre in real viewport, then rotate 90° clockwise */
+    var tx = (vvw / 2) - (cw / 2);
+    var ty = (vvh / 2) - (ch / 2);
+    inner.style.top       = ty + 'px';
+    inner.style.left      = tx + 'px';
+    inner.style.transform = 'rotate(90deg)';
+    overlay.classList.add('portrait');
+  } else {
+    /* Landscape — inner fills screen exactly, no rotation */
+    inner.style.width     = vvw + 'px';
+    inner.style.height    = vvh + 'px';
+    inner.style.top       = '0';
+    inner.style.left      = '0';
+    inner.style.transform = 'none';
+    overlay.classList.remove('portrait');
+  }
+}
+
+/* Wire up resize + orientation listeners */
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', mfsLayout);
+}
+if(screen.orientation){
+  screen.orientation.addEventListener('change', function(){ setTimeout(mfsLayout, 80); });
+} else {
+  window.addEventListener('orientationchange', function(){ setTimeout(mfsLayout, 120); });
+}
+window.addEventListener('resize', mfsLayout);
+
+function openMobileFs(){
+  var overlay    = document.getElementById('mobileFs');
+  var mainIframe = document.getElementById('liveIframe');
+  if(!overlay) return;
+  /* Silence main iframe first — prevents dual audio */
+  if(mainIframe) mainIframe.src = 'about:blank';
+  overlay.classList.add('active');
+  mfsLayout();
+  setTimeout(mfsLayout, 80);
+  try{
+    if(screen.orientation && screen.orientation.lock)
+      screen.orientation.lock('landscape-primary').catch(function(){ mfsLayout(); });
+  }catch(e){ mfsLayout(); }
+  mfsSyncPlayBtn();
+  mfsShowControls();
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
+  /* Reload into mfs iframe with cache-bust */
+  if(isPlaying) reloadStream();
+}
+
+function closeMobileFs(){
+  var overlay    = document.getElementById('mobileFs');
+  var mfIframe   = document.getElementById('mobileFsIframe');
+  if(!overlay) return;
+  overlay.classList.remove('active','portrait');
+  if(mfIframe) mfIframe.src = 'about:blank';
+  try{ if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); }catch(e){}
+  document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
+  /* Restore main iframe with cache-bust */
+  if(isPlaying) reloadStream();
+}
+
+/* ── Quality menu ── */
+function toggleQualityMenu(e){
+  e.stopPropagation();
+  var m = document.getElementById('qualityMenu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('langMenu').style.display = 'none';
+}
+function setQuality(el, label, qSuffix){
+  document.querySelectorAll('.q-opt').forEach(function(b){ b.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('curQuality').textContent = label;
+  document.getElementById('qualityMenu').style.display = 'none';
+  curQSuffix = qSuffix;
+  liveURL = buildURL(curLang, curQSuffix);
+  /* sync all bars */
+  var pcQ = document.getElementById('pcFsCurQ');
+  if(pcQ) pcQ.textContent = label;
+  document.querySelectorAll('.pcfs-q-opt').forEach(function(b){ b.classList.toggle('active', b.textContent.trim()===label); });
+  var mQ = document.getElementById('mfsCurQ');
+  if(mQ) mQ.textContent = label;
+  document.querySelectorAll('#mfsQMenu .mfs-q-opt').forEach(function(b){ b.classList.toggle('active', b.textContent.trim()===label); });
+  if(isPlaying) reloadStream();
+}
+document.addEventListener('click', function(){
+  document.getElementById('qualityMenu').style.display = 'none';
+  document.getElementById('langMenu').style.display = 'none';
+});
+
+/* ══════════════════════════════════════════
+   PC FULLSCREEN — custom overlay (no rotate)
+   ══════════════════════════════════════════ */
+var pcFsAutoHideTimer = null;
+
+function openPcFs(){
+  var overlay    = document.getElementById('pcFs');
+  var mainIframe = document.getElementById('liveIframe');
+  if(!overlay) return;
+  if(mainIframe) mainIframe.src = 'about:blank';
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  pcFsSyncPlayBtn();
+  pcFsShowControls();
+  if(isPlaying) reloadStream();
+}
+
+function closePcFs(){
+  var overlay  = document.getElementById('pcFs');
+  var pcIframe = document.getElementById('pcFsIframe');
+  if(!overlay) return;
+  overlay.classList.remove('active');
+  if(pcIframe) pcIframe.src = 'about:blank';
+  document.body.style.overflow = '';
+  clearTimeout(pcFsAutoHideTimer);
+  if(isPlaying) reloadStream();
+}
+
+function pcFsShowControls(){
+  var c = document.getElementById('pcFsControls');
+  if(!c) return;
+  c.classList.remove('hidden');
+  clearTimeout(pcFsAutoHideTimer);
+  pcFsAutoHideTimer = setTimeout(function(){ c.classList.add('hidden'); }, 3500);
+}
+function pcFsToggleControls(){
+  var c = document.getElementById('pcFsControls');
+  if(!c) return;
+  if(c.classList.contains('hidden')) pcFsShowControls();
+  else { clearTimeout(pcFsAutoHideTimer); c.classList.add('hidden'); }
+}
+
+function pcFsSyncPlayBtn(){
+  var icon = document.getElementById('pcFsPlayIcon');
+  var lbl  = document.getElementById('pcFsPlayLbl');
+  var btn  = document.getElementById('pcFsBtnPlay');
+  if(!icon) return;
+  if(isPlaying){
+    icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+    if(lbl) lbl.textContent = 'Pause';
+    if(btn) btn.classList.add('pcfs-playing');
+  } else {
+    icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+    if(lbl) lbl.textContent = 'Play';
+    if(btn) btn.classList.remove('pcfs-playing');
+  }
+}
+
+function pcFsTogglePlay(){
+  var pcIframe   = document.getElementById('pcFsIframe');
+  var mainIframe = document.getElementById('liveIframe');
+  if(isPlaying){
+    if(pcIframe)   pcIframe.src   = 'about:blank';
+    if(mainIframe) mainIframe.src = 'about:blank';
+    isPlaying = false;
+    stopLagWatchdog();
+    setLagging(false);
+  } else {
+    isPlaying = true;
+    reloadStream();
+    startLagWatchdog();
+  }
+  pcFsSyncPlayBtn();
+  var pIcon = document.getElementById('playIcon');
+  var pLbl  = document.getElementById('playLabel');
+  var pBtn  = document.getElementById('btnPlay');
+  if(pIcon) pIcon.innerHTML = isPlaying ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+  if(pLbl)  pLbl.textContent = isPlaying ? 'Pause' : 'Play';
+  if(pBtn)  isPlaying ? pBtn.classList.add('playing') : pBtn.classList.remove('playing');
+  pcFsShowControls();
+}
+
+
+function pcFsToggleQ(e){
+  e.stopPropagation();
+  document.getElementById('pcFsQMenu').classList.toggle('open');
+  document.getElementById('pcFsLangMenu').classList.remove('open');
+  pcFsShowControls();
+}
+function pcFsSetQ(el, label, qSuffix){
+  document.querySelectorAll('.pcfs-q-opt').forEach(function(b){ b.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('pcFsCurQ').textContent = label;
+  document.getElementById('pcFsQMenu').classList.remove('open');
+  curQSuffix = qSuffix;
+  liveURL = buildURL(curLang, curQSuffix);
+  document.getElementById('curQuality').textContent = label;
+  document.querySelectorAll('.q-opt').forEach(function(b){ b.classList.toggle('active', b.textContent.trim()===label); });
+  document.getElementById('mfsCurQ').textContent = label;
+  if(isPlaying) reloadStream();
+  pcFsShowControls();
+}
+
+function pcFsToggleLang(e){
+  e.stopPropagation();
+  document.getElementById('pcFsLangMenu').classList.toggle('open');
+  document.getElementById('pcFsQMenu').classList.remove('open');
+  pcFsShowControls();
+}
+function pcFsSetLang(el, code){
+  document.getElementById('pcFsLangMenu').classList.remove('open');
+  applyLanguage(code);
+  if(isPlaying) reloadStream();
+  pcFsShowControls();
+}
+
+/* close pcFs menus on outside click */
+document.addEventListener('click', function(e){
+  var ql = document.getElementById('pcFsQWrap');
+  var ll = document.getElementById('pcFsLangWrap');
+  if(ql && !ql.contains(e.target)) document.getElementById('pcFsQMenu').classList.remove('open');
+  if(ll && !ll.contains(e.target)) document.getElementById('pcFsLangMenu').classList.remove('open');
+});
+
+/* ESC closes PC FS */
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    var pcFs = document.getElementById('pcFs');
+    if(pcFs && pcFs.classList.contains('active')) closePcFs();
+  }
+});
+
+/* ══════════════════════════════════════════
+   MOBILE FS — custom control functions
+   ══════════════════════════════════════════ */
+var mfsAutoHideTimer = null;
+
+/* Toggle visibility on tap of the touch-block pane.
+   If any menu is open, close it instead of toggling controls. */
+function mfsTouchBlockClick(e){
+  if(mfsAnyMenuOpen()){
+    var qm = document.getElementById('mfsQMenu');
+    var lm = document.getElementById('mfsLangMenu');
+    if(qm) qm.classList.remove('open');
+    if(lm) lm.style.display = 'none';
+    mfsShowControls();
+    return;
+  }
+  mfsToggleControls();
+}
+
+/* Show controls, reset auto-hide timer */
+function mfsShowControls(){
+  var c = document.getElementById('mfsControls');
+  if(!c) return;
+  c.classList.remove('hidden');
+  clearTimeout(mfsAutoHideTimer);
+  mfsAutoHideTimer = setTimeout(function(){ c.classList.add('hidden'); }, 3500);
+}
+
+/* Toggle visibility on tap of the touch-block pane */
+function mfsToggleControls(){
+  /* never hide controls while a menu is open */
+  if(mfsAnyMenuOpen()) return;
+  var c = document.getElementById('mfsControls');
+  if(!c) return;
+  if(c.classList.contains('hidden')){ mfsShowControls(); }
+  else { clearTimeout(mfsAutoHideTimer); c.classList.add('hidden'); }
+}
+
+/* Sync play button state from main isPlaying var */
+function mfsSyncPlayBtn(){
+  var icon = document.getElementById('mfsPlayIcon');
+  var lbl  = document.getElementById('mfsPlayLbl');
+  var btn  = document.getElementById('mfsBtnPlay');
+  if(!icon) return;
+  if(isPlaying){
+    icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+    if(lbl) lbl.textContent = 'Pause';
+    if(btn) btn.classList.add('mfs-playing');
+  } else {
+    icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+    if(lbl) lbl.textContent = 'Play';
+    if(btn) btn.classList.remove('mfs-playing');
+  }
+}
+
+/* Play / pause inside mfs */
+function mfsTogglePlay(){
+  var mfIframe   = document.getElementById('mobileFsIframe');
+  var mainIframe = document.getElementById('liveIframe');
+  if(isPlaying){
+    if(mfIframe)   mfIframe.src   = 'about:blank';
+    if(mainIframe) mainIframe.src = 'about:blank';
+    isPlaying = false;
+    stopLagWatchdog();
+    setLagging(false);
+  } else {
+    isPlaying = true;
+    reloadStream();
+    startLagWatchdog();
+  }
+  mfsSyncPlayBtn();
+  var pIcon = document.getElementById('playIcon');
+  var pLbl  = document.getElementById('playLabel');
+  var pBtn  = document.getElementById('btnPlay');
+  if(pIcon) pIcon.innerHTML = isPlaying ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+  if(pLbl)  pLbl.textContent = isPlaying ? 'Pause' : 'Play';
+  if(pBtn)  isPlaying ? pBtn.classList.add('playing') : pBtn.classList.remove('playing');
+  mfsShowControls();
+}
+
+/* Refresh inside mfs — now just an alias */
+
+/* Quality selector inside mfs */
+function mfsAnyMenuOpen(){
+  var qm = document.getElementById('mfsQMenu');
+  var lm = document.getElementById('mfsLangMenu');
+  return (qm && qm.classList.contains('open')) ||
+         (lm && lm.style.display !== 'none' && lm.style.display !== '');
+}
+
+function mfsToggleQ(e){
+  if(e){ e.stopPropagation(); }
+  var qm = document.getElementById('mfsQMenu');
+  var lm = document.getElementById('mfsLangMenu');
+  if(!qm) return;
+  var opening = !qm.classList.contains('open');
+  qm.classList.toggle('open');
+  if(lm) lm.style.display = 'none'; /* close lang menu */
+  if(opening){
+    /* pause auto-hide while menu is visible */
+    clearTimeout(mfsAutoHideTimer);
+  } else {
+    mfsShowControls();
+  }
+}
+
+function mfsSetQ(el, label, suffix){
+  var qm = document.getElementById('mfsQMenu');
+  if(qm) qm.classList.remove('open');
+  document.querySelectorAll('#mfsQMenu .mfs-q-opt').forEach(function(b){ b.classList.remove('active'); });
+  if(el) el.classList.add('active');
+  var curQEl = document.getElementById('mfsCurQ');
+  if(curQEl) curQEl.textContent = label;
+  curQSuffix = suffix;
+  liveURL = buildURL(curLang, curQSuffix);
+  /* sync all bars */
+  var mainQEl = document.getElementById('curQuality');
+  if(mainQEl) mainQEl.textContent = label;
+  document.querySelectorAll('.q-opt').forEach(function(b){ b.classList.toggle('active', b.textContent.trim()===label); });
+  var pcQEl = document.getElementById('pcFsCurQ');
+  if(pcQEl) pcQEl.textContent = label;
+  document.querySelectorAll('.pcfs-q-opt').forEach(function(b){ b.classList.toggle('active', b.textContent.trim()===label); });
+  if(isPlaying) reloadStream();
+  mfsShowControls();
+}
+
+function mfsToggleLang(e){
+  if(e){ e.stopPropagation(); }
+  var lm = document.getElementById('mfsLangMenu');
+  var qm = document.getElementById('mfsQMenu');
+  if(!lm) return;
+  var opening = lm.style.display === 'none' || lm.style.display === '';
+  lm.style.display = opening ? 'block' : 'none';
+  if(qm) qm.classList.remove('open');
+  if(opening){ clearTimeout(mfsAutoHideTimer); } else { mfsShowControls(); }
+}
+
+function mfsSetLang(el, code){
+  var lm = document.getElementById('mfsLangMenu');
+  if(lm) lm.style.display = 'none';
+  applyLanguage(code);
+  if(isPlaying) reloadStream();
+  mfsShowControls();
+}
+
+/* Close mfs menus on outside tap */
+document.addEventListener('touchstart', function(e){
+  var qw = document.getElementById('mfsQWrap');
+  var lw = document.getElementById('mfsLangWrap');
+  if(qw && !qw.contains(e.target)){
+    var qm = document.getElementById('mfsQMenu');
+    if(qm && qm.classList.contains('open')){ qm.classList.remove('open'); mfsShowControls(); }
+  }
+  if(lw && !lw.contains(e.target)){
+    var lm = document.getElementById('mfsLangMenu');
+    if(lm && lm.style.display !== 'none'){ lm.style.display = 'none'; mfsShowControls(); }
+  }
+}, {passive:true});
+</script>
+
+<!-- IPL FREE LIVE STRIP -->
+<div class="stats-strip">
+  <div style="background:linear-gradient(135deg,rgba(230,57,70,.1),rgba(249,115,22,.1));border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:14px;">
+    <span style="width:9px;height:9px;background:#e63946;border-radius:50%;animation:pulse 1.4s ease-in-out infinite;flex-shrink:0;display:inline-block;"></span>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;background:linear-gradient(135deg,var(--rcb2),var(--srh));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">IPL FREE LIVE</div>
+    <span style="font-size:11px;color:var(--muted2);font-weight:600;letter-spacing:.5px;">IPL 2026 · No Login · No Subscription</span>
+  </div>
+</div>
+
+<!-- HOW TO WATCH -->
+<div class="how-section">
+  <div class="sec-title">How to <span class="rcb">Watch</span> <span class="srh">Live</span></div>
+  <div class="how-grid">
+    <div class="how-step">
+      <div class="step-n rcb">1</div>
+      <div class="step-body"><strong>Stream auto-loads</strong><p>The live stream starts automatically — no URL or app needed.</p></div>
+    </div>
+    <div class="how-step">
+      <div class="step-n srh">2</div>
+      <div class="step-body"><strong>Wait for buffer</strong><p>Give it a few seconds. The spinner disappears once the stream is ready.</p></div>
+    </div>
+    <div class="how-step">
+      <div class="step-n rcb">3</div>
+      <div class="step-body"><strong>Tap Play</strong><p>On mobile, tap the video once to show controls, then tap play.</p></div>
+    </div>
+    <div class="how-step">
+      <div class="step-n srh">4</div>
+      <div class="step-body"><strong>Go fullscreen</strong><p>Tap the fullscreen icon for the best experience on any device.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHANNELS -->
+<div class="quick-section">
+  <div class="sec-title">Free <span class="rcb">Channels</span></div>
+  <div class="quick-grid">
+    <a href="jiohotstar.html" class="qc" style="border-color:rgba(31,128,224,.2);">
+      <div class="qc-dot" style="background:#1f80e0;box-shadow:0 0 8px rgba(31,128,224,.5);"></div>
+      <div><div class="qc-name">JioHotstar</div><div class="qc-sub">IPL 2026 · 4K · Free Tier</div></div>
+    </a>
+    <a href="jiohotstar.html" class="qc" style="border-color:rgba(6,214,160,.2);">
+      <div class="qc-dot" style="background:#06d6a0;box-shadow:0 0 8px rgba(6,214,160,.5);"></div>
+      <div><div class="qc-name">DD Sports</div><div class="qc-sub">100% Free · No Login</div></div>
+    </a>
+  </div>
+</div>
+
+<!-- PC FULLSCREEN OVERLAY — custom controls, no rotation -->
+<div id="pcFs">
+  <iframe id="pcFsIframe"
+    src="about:blank"
+    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+    allowfullscreen playsinline webkit-playsinline
+    referrerpolicy="no-referrer-when-downgrade">
+  </iframe>
+
+  <!-- blocks clicks reaching iframe -->
+  <div id="pcFsTouchBlock" onclick="pcFsToggleControls()"></div>
+
+  <!-- Custom control bar -->
+  <div id="pcFsControls">
+
+    <!-- Play/Pause -->
+    <button class="pcfs-btn pcfs-btn-play" id="pcFsBtnPlay" onclick="pcFsTogglePlay()">
+      <svg id="pcFsPlayIcon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      <span id="pcFsPlayLbl">Play</span>
+    </button>
+
+    <!-- Live info -->
+    <div id="pcFsLiveLabel">
+      <span id="pcFsLiveDot"></span>
+      <span id="pcFsChLabel">Star Sports 1 Hindi · Live</span>
+      <span class="delay-badge" id="delayBadgePcFs"></span>
+    </div>
+
+    <!-- Language -->
+    <div id="pcFsLangWrap">
+      <button class="pcfs-btn" id="pcFsLangBtn" onclick="pcFsToggleLang(event)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
+        <span id="pcFsCurLang">HI</span>
+      </button>
+      <div id="pcFsLangMenu">
+        <button class="pcfs-l-opt" onclick="pcFsSetLang(this,'HI','Hindi')">🇮🇳 Hindi</button>
+        <button class="pcfs-l-opt" onclick="pcFsSetLang(this,'EN','English')">🏏 English</button>
+        <button class="pcfs-l-opt" onclick="pcFsSetLang(this,'TA','Tamil')">🎙 Tamil</button>
+        <button class="pcfs-l-opt" onclick="pcFsSetLang(this,'TE','Telugu')">📺 Telugu</button>
+      </div>
+    </div>
+
+    <!-- Quality -->
+    <div id="pcFsQWrap">
+      <button class="pcfs-btn" onclick="pcFsToggleQ(event)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a6.94 6.94 0 00-1.62-.94l-.36-2.54A.484.484 0 0014 2h-4a.484.484 0 00-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 00-.59.22L2.74 8.87a.47.47 0 00.12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.27.41.49.41h4c.22 0 .44-.17.49-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 00-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        <span id="pcFsCurQ">Auto</span>
+      </button>
+      <div id="pcFsQMenu">
+        <button class="pcfs-q-opt active" onclick="pcFsSetQ(this,'Auto',null)">Auto</button>
+        <button class="pcfs-q-opt" onclick="pcFsSetQ(this,'1080p','1080')">1080p</button>
+        <button class="pcfs-q-opt" onclick="pcFsSetQ(this,'720p','720')">720p</button>
+        <button class="pcfs-q-opt" onclick="pcFsSetQ(this,'480p','480')">480p</button>
+        <button class="pcfs-q-opt" onclick="pcFsSetQ(this,'360p','360')">360p</button>
+      </div>
+    </div>
+
+    <!-- Refresh / Go Live -->
+    <button class="pcfs-btn" id="pcFsBtnRefresh" onclick="goLiveOrRefresh('pcfs')">
+      <svg id="pcFsRefreshIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+      <span id="pcFsRefreshLbl">Refresh</span>
+    </button>
+
+    <!-- Exit fullscreen -->
+    <button class="pcfs-btn pcfs-btn-close" onclick="closePcFs()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      Exit
+    </button>
+
+    <!-- Picture-in-Picture -->
+    <button class="pcfs-btn" id="pcFsBtnPip" onclick="togglePip()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 7h-8v6h8V7zm2-4H3C1.9 3 1 3.9 1 5v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z"/></svg>
+    </button>
+
+  </div>
+</div>
+
+<!-- MOBILE FULLSCREEN OVERLAY — auto-rotate + custom controls -->
+<div id="mobileFs">
+  <!-- Legacy close (hidden by CSS) -->
+  <button id="mobileFsClose" onclick="closeMobileFs()">✕</button>
+
+  <!-- #mfsInner is the virtual landscape canvas; CSS-rotated 90° in portrait mode -->
+  <div id="mfsInner">
+
+    <!-- The stream iframe — pointer-events:none, embedded controls blocked -->
+    <iframe id="mobileFsIframe"
+      src="about:blank"
+      allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+      allowfullscreen playsinline webkit-playsinline
+      referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+
+    <!-- Transparent pane blocks all touch from reaching the iframe -->
+    <div id="mfsTouchBlock" onclick="mfsTouchBlockClick(event)"></div>
+
+    <!-- Our own control bar — inside #mfsInner so it rotates with the video -->
+    <div id="mfsControls">
+
+    <!-- Play / Pause -->
+    <button class="mfs-btn mfs-btn-play" id="mfsBtnPlay" onclick="mfsTogglePlay()" ontouchend="event.preventDefault();mfsTogglePlay()">
+      <svg id="mfsPlayIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      <span id="mfsPlayLbl">Play</span>
+    </button>
+
+    <!-- Live label -->
+    <div id="mfsLiveLabel">
+      <span id="mfsLiveDot"></span>
+      <span id="mfsChLabel">Star Sports 1 Hindi</span>
+      <span class="delay-badge" id="delayBadgeMfs"></span>
+    </div>
+
+    <!-- Language -->
+    <div id="mfsLangWrap" style="position:relative;">
+      <button class="mfs-btn" id="mfsLangBtn" onclick="mfsToggleLang(event)" ontouchend="event.preventDefault();mfsToggleLang(event)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
+        <span id="mfsCurLang">HI</span>
+      </button>
+      <div id="mfsLangMenu" style="position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-width:115px;box-shadow:0 8px 30px rgba(0,0,0,.7);z-index:9050;display:none;">
+        <button class="mfs-q-opt active" onclick="mfsSetLang(this,'HI','Hindi')" ontouchend="event.preventDefault();mfsSetLang(this,'HI','Hindi')">🇮🇳 Hindi</button>
+        <button class="mfs-q-opt" onclick="mfsSetLang(this,'EN','English')" ontouchend="event.preventDefault();mfsSetLang(this,'EN','English')">🏏 English</button>
+        <button class="mfs-q-opt" onclick="mfsSetLang(this,'TA','Tamil')" ontouchend="event.preventDefault();mfsSetLang(this,'TA','Tamil')">🎙 Tamil</button>
+        <button class="mfs-q-opt" onclick="mfsSetLang(this,'TE','Telugu')" ontouchend="event.preventDefault();mfsSetLang(this,'TE','Telugu')">📺 Telugu</button>
+      </div>
+    </div>
+
+    <!-- Quality -->
+    <div id="mfsQWrap">
+      <button class="mfs-btn" onclick="mfsToggleQ(event)" ontouchend="event.preventDefault();mfsToggleQ(event)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a6.94 6.94 0 00-1.62-.94l-.36-2.54A.484.484 0 0014 2h-4a.484.484 0 00-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 00-.59.22L2.74 8.87a.47.47 0 00.12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.27.41.49.41h4c.22 0 .44-.17.49-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 00-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        <span id="mfsCurQ">Auto</span>
+      </button>
+      <div id="mfsQMenu">
+        <button class="mfs-q-opt active" onclick="mfsSetQ(this,'Auto',null)" ontouchend="event.preventDefault();mfsSetQ(this,'Auto',null)">Auto</button>
+        <button class="mfs-q-opt" onclick="mfsSetQ(this,'1080p','1080')" ontouchend="event.preventDefault();mfsSetQ(this,'1080p','1080')">1080p</button>
+        <button class="mfs-q-opt" onclick="mfsSetQ(this,'720p','720')"   ontouchend="event.preventDefault();mfsSetQ(this,'720p','720')">720p</button>
+        <button class="mfs-q-opt" onclick="mfsSetQ(this,'480p','480')"   ontouchend="event.preventDefault();mfsSetQ(this,'480p','480')">480p</button>
+        <button class="mfs-q-opt" onclick="mfsSetQ(this,'360p','360')"   ontouchend="event.preventDefault();mfsSetQ(this,'360p','360')">360p</button>
+      </div>
+    </div>
+
+    <!-- Refresh / Go Live -->
+    <button class="mfs-btn" id="mfsBtnRefresh" onclick="goLiveOrRefresh('mfs')" ontouchend="event.preventDefault();goLiveOrRefresh('mfs')">
+      <svg id="mfsRefreshIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+      <span id="mfsRefreshLbl"></span>
+    </button>
+
+    <!-- Close -->
+    <button class="mfs-btn mfs-btn-close" onclick="closeMobileFs()" ontouchend="event.preventDefault();closeMobileFs()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      <span>Exit</span>
+    </button>
+
+    <!-- Picture-in-Picture -->
+    <button class="mfs-btn" id="mfsBtnPip" onclick="togglePip()" ontouchend="event.preventDefault();togglePip()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 7h-8v6h8V7zm2-4H3C1.9 3 1 3.9 1 5v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z"/></svg>
+    </button>
+
+
+  </div><!-- /#mfsControls -->
+
+  </div><!-- /#mfsInner -->
+</div><!-- /#mobileFs -->
+
+<footer>
+  &copy; 2026 icn.rishi · Watch Free Live Cricket · IPL 2026<br>
+  Not affiliated with BCCI, IPL or JioHotstar
+</footer>
+
+
+
+<style>
+.ui-btn-pip{ color:var(--muted2); }
+.ui-btn-pip.pip-active,
+.pcfs-btn.pip-active,
+.mfs-btn.pip-active{
+  color:#a78bfa !important;
+  border-color:rgba(167,139,250,.45) !important;
+  background:rgba(167,139,250,.12) !important;
+}
+</style>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   PICTURE-IN-PICTURE
+   The stream pages are regular web pages loaded in cross-origin
+   iframes. iframe.requestPictureInPicture() (Chrome 111+) is the
+   only viable API — it doesn't need access to the iframe's DOM.
+   Requirement: iframe must have allow="picture-in-picture" ✓
+   and the call must happen inside a user gesture ✓ (button click).
+   ══════════════════════════════════════════════════════════════ */
+
+var pipActive = false;
+
+function getActiveIframe(){
+  var pcFs     = document.getElementById('pcFs');
+  var mobileFs = document.getElementById('mobileFs');
+  if(pcFs     && pcFs.classList.contains('active')) return document.getElementById('pcFsIframe');
+  if(mobileFs && mobileFs.classList.contains('active')) return document.getElementById('mobileFsIframe');
+  return document.getElementById('liveIframe');
+}
+
+function togglePip(){
+  /* Exit PiP if already active */
+  if(document.pictureInPictureElement){
+    document.exitPictureInPicture().catch(function(){});
+    setPipBtnState(false);
+    pipActive = false;
+    return;
+  }
+
+  if(!isPlaying){
+    showPipToast('Tap Play first');
+    return;
+  }
+
+  var iframe = getActiveIframe();
+  if(!iframe || !iframe.src || iframe.src === 'about:blank'){
+    showPipToast('Stream not loaded yet');
+    return;
+  }
+
+  /* iframe.requestPictureInPicture() — Chrome 111+, works cross-origin */
+  if(typeof iframe.requestPictureInPicture !== 'function'){
+    showPipToast('PiP not supported — use Chrome or Edge');
+    return;
+  }
+
+  iframe.requestPictureInPicture().then(function(){
+    setPipBtnState(true);
+    pipActive = true;
+    iframe.addEventListener('leavepictureinpicture', function(){
+      setPipBtnState(false);
+      pipActive = false;
+    }, {once:true});
+  }).catch(function(err){
+    /* Most common cause: no media playing yet inside the iframe.
+       The stream page may still be loading its own player. Retry once after 2s. */
+    showPipToast('Retrying PiP…');
+    setTimeout(function(){
+      iframe.requestPictureInPicture().then(function(){
+        setPipBtnState(true);
+        pipActive = true;
+        iframe.addEventListener('leavepictureinpicture', function(){
+          setPipBtnState(false);
+          pipActive = false;
+        }, {once:true});
+      }).catch(function(){
+        showPipToast('PiP unavailable — stream player must be active');
+      });
+    }, 2000);
+  });
+}
+
+function setPipBtnState(active){
+  ['btnPip','pcFsBtnPip','mfsBtnPip'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.classList.toggle('pip-active', active);
+  });
+}
+
+function showPipToast(msg){
+  var old = document.getElementById('_pipToast');
+  if(old && old.parentNode) old.parentNode.removeChild(old);
+  var t = document.createElement('div');
+  t.id = '_pipToast';
+  t.textContent = msg;
+  t.style.cssText = [
+    'position:fixed','bottom:90px','left:50%','transform:translateX(-50%)',
+    'background:rgba(20,18,30,.97)','color:#fff','font-family:DM Sans,sans-serif',
+    'font-size:12px','font-weight:600','letter-spacing:.3px',
+    'padding:9px 20px','border-radius:20px','z-index:99999',
+    'border:1px solid rgba(255,255,255,.12)',
+    'box-shadow:0 4px 24px rgba(0,0,0,.6)',
+    'pointer-events:none','transition:opacity .4s','opacity:1',
+    'white-space:nowrap'
+  ].join(';');
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; }, 2400);
+  setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 2900);
+}
+</script>
+
+</body>
+</html>
